@@ -1,0 +1,7 @@
+flake8==7.1.0
+Jinja2==3.1.4
+mypy==1.10.1
+pre-commit==3.7.1
+Pygments==2.18.0
+pytest==8.2.2
+python-dotenv==1.0.0
