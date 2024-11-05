@@ -4,24 +4,13 @@ from typing import List, cast
 import pytest
 from pydantic import ValidationError
 
-from models.esu_kayit import (
-    EPDK_LISANS_ERROR,
-    ESU_MARKA_ERROR,
-    ESU_MODEL_ERROR,
-    FIRMA_KODU_ERROR,
-    FIRMA_VKN_ERROR,
-    SERI_NO_ERROR,
-    SOKET_DETAY_ACDC_ERROR,
-    SOKET_DETAY_TIP_ERROR,
-    SOKET_DETAY_UZUNLUK_ERROR,
-    SOKET_NO_ERROR,
-    SOKET_SAYISI_ERROR,
-    SOKET_TIPI_ERROR,
-    ESUKayit,
-    ESUKayitBilgisi,
-    ESUKayitModel,
-    ESUSoket,
-)
+from models.esu_kayit import (EPDK_LISANS_ERROR, ESU_MARKA_ERROR,
+                              ESU_MODEL_ERROR, FIRMA_KODU_ERROR,
+                              FIRMA_VKN_ERROR, SERI_NO_ERROR,
+                              SOKET_DETAY_ACDC_ERROR, SOKET_DETAY_TIP_ERROR,
+                              SOKET_DETAY_UZUNLUK_ERROR, SOKET_NO_ERROR,
+                              SOKET_SAYISI_ERROR, SOKET_TIPI_ERROR, ESUKayit,
+                              ESUKayitBilgisi, ESUKayitModel, ESUSoket)
 
 
 @pytest.fixture(scope="module")

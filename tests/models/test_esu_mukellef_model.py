@@ -4,27 +4,17 @@ from typing import List, cast
 import pytest
 from pydantic import ValidationError
 
-from models.esu_mukellef import (
-    FATURA_ERROR,
-    FATURA_ETTN_ERROR,
-    FATURA_TARIHI_ERROR,
-    FIRMA_KODU_ERROR,
-    IL_KODU_ERROR,
-    ILCE_ERROR,
-    MUKELLEF_UNVAN_ERROR,
-    MUKELLEF_VKN_ERROR,
-    MULKIYET_SAHIBI_AD_UNVAN_ERROR,
-    MULKIYET_SAHIBI_VKN_TCKN_ERROR,
-    MULKİYET_ERROR,
-    SERI_NO_ERROR,
-    SERTIFIKA_ERROR,
-    SERTIFIKA_TARIHI_ERROR,
-    SERTIFIKA_VE_MULKIYET_ERROR,
-    YA_FATURA_YA_MULKIYET_ERROR,
-    ESUMukellef,
-    ESUMukellefBilgisi,
-    ESUMukellefModel,
-)
+from models.esu_mukellef import (FATURA_ERROR, FATURA_ETTN_ERROR,
+                                 FATURA_TARIHI_ERROR, FIRMA_KODU_ERROR,
+                                 IL_KODU_ERROR, ILCE_ERROR,
+                                 MUKELLEF_UNVAN_ERROR, MUKELLEF_VKN_ERROR,
+                                 MULKIYET_SAHIBI_AD_UNVAN_ERROR,
+                                 MULKIYET_SAHIBI_VKN_TCKN_ERROR,
+                                 MULKİYET_ERROR, SERI_NO_ERROR,
+                                 SERTIFIKA_ERROR, SERTIFIKA_TARIHI_ERROR,
+                                 SERTIFIKA_VE_MULKIYET_ERROR,
+                                 YA_FATURA_YA_MULKIYET_ERROR, ESUMukellef,
+                                 ESUMukellefBilgisi, ESUMukellefModel)
 
 
 @pytest.fixture(scope="module")
@@ -64,7 +54,10 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
         ("durum_bilgileri>mulkiyet_sahibi_ad_unvan", "ABC A.Ş.", MULKİYET_ERROR),
         ("durum_bilgileri>sertifika_tarihi", "2024-12-30", SERTIFIKA_ERROR),
         (
-            "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*durum_bilgileri>mulkiyet_sahibi_ad_unvan",
+            (
+                "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*"
+                "durum_bilgileri>mulkiyet_sahibi_ad_unvan"
+            ),
             "1234567890*ABC A.Ş.",
             YA_FATURA_YA_MULKIYET_ERROR,
         ),
@@ -88,7 +81,8 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
         ("durum_bilgileri>fatura_ettn", "XX", FATURA_ETTN_ERROR),
         (
             (
-                "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*durum_bilgileri>mulkiyet_sahibi_ad_unvan*"
+                "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*"
+                "durum_bilgileri>mulkiyet_sahibi_ad_unvan*"
                 "durum_bilgileri>fatura_ettn*durum_bilgileri>fatura_tarihi"
             ),
             "012345678901*ABC A.Ş.**",
@@ -96,7 +90,8 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
         ),
         (
             (
-                "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*durum_bilgileri>mulkiyet_sahibi_ad_unvan*"
+                "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*"
+                "durum_bilgileri>mulkiyet_sahibi_ad_unvan*"
                 "durum_bilgileri>fatura_ettn*durum_bilgileri>fatura_tarihi"
             ),
             "0123456789*X**",
@@ -106,7 +101,8 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
             (
                 "durum_bilgileri>sertifika_tarihi*durum_bilgileri>sertifika_no*"
                 "durum_bilgileri>fatura_ettn*durum_bilgileri>fatura_tarihi*"
-                "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*durum_bilgileri>mulkiyet_sahibi_ad_unvan"
+                "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*"
+                "durum_bilgileri>mulkiyet_sahibi_ad_unvan"
             ),
             "23-05-2004*CERT01***0123456789*ABC A.Ş.",
             SERTIFIKA_TARIHI_ERROR,
