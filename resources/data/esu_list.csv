@@ -1,3 +1,3 @@
-esu_seri_no,esu_soket_tipi,esu_soket_sayisi,esu_soket_detay,esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn
-7001133324000033,AC,1,Soket1:AC,Vestel,EVC04,"034",Üsküdar,31.07.2024,P012024000512949
-7001133324000027,AC,1,Soket1:AC,Vestel,EVC04,"034",Üsküdar,31.07.2024,P012024000512949
+esu_seri_no,esu_soket_tipi,esu_soket_sayisi,esu_soket_detay,esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn,mukellef_vkn,mukellef_unvan,sertifika_no,sertifika_tarihi,mulkiyet_vkn,mulkiyet_unvan
+7001133324000033,AC,1,Soket1:AC,Vestel,EVC04,"034",Üsküdar,31.07.2024,P012024000512949,,,,,,
+7001133324000027,AC,1,Soket1:AC,Vestel,EVC04,"034",Üsküdar,31.07.2024,P012024000512949,,,,,,
