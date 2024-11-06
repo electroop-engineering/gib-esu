@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import List, Literal
+from typing import List, Literal, cast
 
 from pydantic import BaseModel
 from pydantic.functional_validators import AfterValidator
@@ -33,25 +33,28 @@ SOKET_DETAY_UZUNLUK_ERROR = "esu_soket_sayisi kadar soket detayı sağlanmalı"
 SOKET_DETAY_ACDC_ERROR = "esu_soket_tipi [AC/DC] soket detayları ile uyumlu değil"
 
 
-class ESUSoket(TypedDict):
+class Soket(TypedDict):
     soket_no: str  # Soket1, Soket2, Soket3, etc.
     soket_tip: Literal["AC", "DC"]
 
 
-class ESUKayitBilgisi(TypedDict):
+class ESU(TypedDict):
     esu_seri_no: str
     esu_soket_tipi: Literal["AC", "DC", "AC/DC"]
     esu_soket_sayisi: str  # "1", "2", "3", etc.
-    esu_soket_detay: List[ESUSoket]
+    esu_soket_detay: List[Soket]
     esu_markasi: str
     esu_modeli: str
 
 
-class ESUKayitModel(TypedDict):
+class Firma(TypedDict):
     firma_kodu: str
     firma_vkn: str
     epdk_lisans_no: str
-    kayit_bilgisi: ESUKayitBilgisi
+
+
+class ESUKayitModel(Firma):
+    kayit_bilgisi: ESU
 
 
 def validate_model(model: ESUKayitModel) -> ESUKayitModel:
@@ -111,3 +114,8 @@ ESUKayitModelCandidate = Annotated[ESUKayitModel, AfterValidator(validate_model)
 
 class ESUKayit(BaseModel):
     model: ESUKayitModelCandidate
+
+    @classmethod
+    def olustur(cls, firma: Firma, esu: ESU) -> ESUKayit:
+        data = {**firma, "kayit_bilgisi": esu}
+        return cls(model=cast(ESUKayitModelCandidate, data))

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from typing import Optional, cast
 
 from pydantic import BaseModel
 from pydantic.functional_validators import AfterValidator
@@ -62,20 +63,35 @@ YA_FATURA_YA_MULKIYET_ERROR = (
 )
 
 
-class ESUMukellefBilgisi(TypedDict):
-    esu_seri_no: str
+class Lokasyon(TypedDict):
     il_kodu: str
     ilce: str
     adres_numarası: str
     koordinat: str
+
+
+class Mukellef(TypedDict):
     mukellef_vkn: str
     mukellef_unvan: str
+
+
+class Sertifika(TypedDict):
     sertifika_no: str
     sertifika_tarihi: str
+
+
+class Fatura(TypedDict):
     fatura_tarihi: str  # Mülkiyet sahibi, lokasyon SAHİBİ ise dolu
     fatura_ettn: str  # Mülkiyet sahibi, lokasyon SAHİBİ ise dolu
+
+
+class MulkiyetSahibi(TypedDict):
     mulkiyet_sahibi_vkn_tckn: str  # Mülkiyet sahibi, lokasyon SAHİBİ değilse dolu
     mulkiyet_sahibi_ad_unvan: str  # Mülkiyet sahibi, lokasyon SAHİBİ değilse dolu
+
+
+class ESUMukellefBilgisi(Fatura, Lokasyon, Mukellef, MulkiyetSahibi, Sertifika):
+    esu_seri_no: str
 
 
 class ESUMukellefModel(TypedDict):
@@ -189,3 +205,36 @@ ESUMukellefModelCandidate = Annotated[ESUMukellefModel, AfterValidator(validate_
 
 class ESUMukellef(BaseModel):
     model: ESUMukellefModelCandidate
+
+    @classmethod
+    def olustur(
+        cls,
+        esu_seri_no: str,
+        firma_kodu: str,
+        fatura: Fatura,
+        lokasyon: Lokasyon,
+        mukellef: Mukellef,
+        mulkiyet_sahibi: Optional[MulkiyetSahibi] = None,
+        sertifika: Optional[Sertifika] = None,
+    ) -> ESUMukellef:
+        mukellef_durum = ESUMukellefBilgisi(
+            esu_seri_no=esu_seri_no,
+            fatura_ettn=fatura["fatura_ettn"],
+            fatura_tarihi=fatura["fatura_tarihi"],
+            adres_numarası=lokasyon.get("adres_numarası", ""),
+            koordinat=lokasyon.get("koordinat", ""),
+            il_kodu=lokasyon["il_kodu"],
+            ilce=lokasyon["ilce"],
+            mukellef_vkn=mukellef["mukellef_vkn"],
+            mukellef_unvan=mukellef["mukellef_unvan"],
+            mulkiyet_sahibi_vkn_tckn=(
+                mulkiyet_sahibi["mulkiyet_sahibi_vkn_tckn"] if mulkiyet_sahibi else ""
+            ),
+            mulkiyet_sahibi_ad_unvan=(
+                mulkiyet_sahibi["mulkiyet_sahibi_ad_unvan"] if mulkiyet_sahibi else ""
+            ),
+            sertifika_no=sertifika["sertifika_no"] if sertifika else "",
+            sertifika_tarihi=sertifika["sertifika_tarihi"] if sertifika else "",
+        )
+        data = {"firma_kodu": firma_kodu, "durum_bilgileri": mukellef_durum}
+        return cls(model=cast(ESUMukellefModelCandidate, data))

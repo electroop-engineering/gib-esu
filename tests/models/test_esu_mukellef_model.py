@@ -4,17 +4,32 @@ from typing import List, cast
 import pytest
 from pydantic import ValidationError
 
-from models.esu_mukellef import (FATURA_ERROR, FATURA_ETTN_ERROR,
-                                 FATURA_TARIHI_ERROR, FIRMA_KODU_ERROR,
-                                 IL_KODU_ERROR, ILCE_ERROR,
-                                 MUKELLEF_UNVAN_ERROR, MUKELLEF_VKN_ERROR,
-                                 MULKIYET_SAHIBI_AD_UNVAN_ERROR,
-                                 MULKIYET_SAHIBI_VKN_TCKN_ERROR,
-                                 MULKİYET_ERROR, SERI_NO_ERROR,
-                                 SERTIFIKA_ERROR, SERTIFIKA_TARIHI_ERROR,
-                                 SERTIFIKA_VE_MULKIYET_ERROR,
-                                 YA_FATURA_YA_MULKIYET_ERROR, ESUMukellef,
-                                 ESUMukellefBilgisi, ESUMukellefModel)
+from models.esu_mukellef import (
+    FATURA_ERROR,
+    FATURA_ETTN_ERROR,
+    FATURA_TARIHI_ERROR,
+    FIRMA_KODU_ERROR,
+    IL_KODU_ERROR,
+    ILCE_ERROR,
+    MUKELLEF_UNVAN_ERROR,
+    MUKELLEF_VKN_ERROR,
+    MULKIYET_SAHIBI_AD_UNVAN_ERROR,
+    MULKIYET_SAHIBI_VKN_TCKN_ERROR,
+    MULKİYET_ERROR,
+    SERI_NO_ERROR,
+    SERTIFIKA_ERROR,
+    SERTIFIKA_TARIHI_ERROR,
+    SERTIFIKA_VE_MULKIYET_ERROR,
+    YA_FATURA_YA_MULKIYET_ERROR,
+    ESUMukellef,
+    ESUMukellefBilgisi,
+    ESUMukellefModel,
+    Fatura,
+    Lokasyon,
+    Mukellef,
+    MulkiyetSahibi,
+    Sertifika,
+)
 
 
 @pytest.fixture(scope="module")
@@ -133,5 +148,60 @@ def test_esu_mukellef_model_validation_success_case(my_model: ESUMukellefModel) 
     """Test ESUMukellefModel construction and validation success."""
     try:
         ESUMukellef(model=my_model)
+    except Exception as excinfo:
+        pytest.fail(f"Unexpected exception raised: {excinfo}")
+
+
+def test_esu_mukellef_olustur(my_model: ESUMukellefModel) -> None:
+    """Test ESUMukellef.olustur(firma, esu) class method."""
+
+    lokasyon = Lokasyon(
+        il_kodu=my_model["durum_bilgileri"]["il_kodu"],
+        ilce=my_model["durum_bilgileri"]["ilce"],
+        adres_numarası=my_model["durum_bilgileri"]["adres_numarası"],
+        koordinat=my_model["durum_bilgileri"]["koordinat"],
+    )
+
+    fatura = Fatura(
+        fatura_ettn=my_model["durum_bilgileri"]["fatura_ettn"],
+        fatura_tarihi=my_model["durum_bilgileri"]["fatura_tarihi"],
+    )
+
+    mukellef = Mukellef(
+        mukellef_vkn=my_model["durum_bilgileri"]["mukellef_vkn"],
+        mukellef_unvan=my_model["durum_bilgileri"]["mukellef_unvan"],
+    )
+
+    mulkiyet_sahibi = MulkiyetSahibi(
+        mulkiyet_sahibi_vkn_tckn=my_model["durum_bilgileri"][
+            "mulkiyet_sahibi_vkn_tckn"
+        ],
+        mulkiyet_sahibi_ad_unvan=my_model["durum_bilgileri"][
+            "mulkiyet_sahibi_ad_unvan"
+        ],
+    )
+
+    sertifika = Sertifika(
+        sertifika_no=my_model["durum_bilgileri"]["sertifika_no"],
+        sertifika_tarihi=my_model["durum_bilgileri"]["sertifika_tarihi"],
+    )
+
+    try:
+        ESUMukellef.olustur(
+            esu_seri_no=my_model["durum_bilgileri"]["esu_seri_no"],
+            firma_kodu=my_model["firma_kodu"],
+            fatura=fatura,
+            lokasyon=lokasyon,
+            mukellef=mukellef,
+            mulkiyet_sahibi=mulkiyet_sahibi,
+            sertifika=sertifika,
+        )
+        ESUMukellef.olustur(
+            esu_seri_no="SN001",
+            firma_kodu="J000",
+            fatura=fatura,
+            lokasyon=lokasyon,
+            mukellef=mukellef,
+        )
     except Exception as excinfo:
         pytest.fail(f"Unexpected exception raised: {excinfo}")
