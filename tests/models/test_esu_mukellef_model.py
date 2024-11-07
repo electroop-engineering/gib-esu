@@ -21,6 +21,7 @@ from models.esu_mukellef import (
     SERTIFIKA_TARIHI_ERROR,
     SERTIFIKA_VE_MULKIYET_ERROR,
     YA_FATURA_YA_MULKIYET_ERROR,
+    ESUGuncelleme,
     ESUMukellef,
     ESUMukellefBilgisi,
     ESUMukellefModel,
@@ -77,12 +78,12 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
             YA_FATURA_YA_MULKIYET_ERROR,
         ),
         (
-            "durum_bilgileri>fatura_ettn*durum_bilgileri>fatura_tarihi",
+            "durum_bilgileri>fatura_ettn*" "durum_bilgileri>fatura_tarihi",
             "*",
             YA_FATURA_YA_MULKIYET_ERROR,
         ),
         (
-            "durum_bilgileri>sertifika_no*durum_bilgileri>sertifika_tarihi",
+            "durum_bilgileri>sertifika_no*" "durum_bilgileri>sertifika_tarihi",
             "CERT01*2024-12-30",
             SERTIFIKA_VE_MULKIYET_ERROR,
         ),
@@ -98,7 +99,8 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
             (
                 "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*"
                 "durum_bilgileri>mulkiyet_sahibi_ad_unvan*"
-                "durum_bilgileri>fatura_ettn*durum_bilgileri>fatura_tarihi"
+                "durum_bilgileri>fatura_ettn*"
+                "durum_bilgileri>fatura_tarihi"
             ),
             "012345678901*ABC A.Ş.**",
             MULKIYET_SAHIBI_VKN_TCKN_ERROR,
@@ -107,15 +109,18 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
             (
                 "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*"
                 "durum_bilgileri>mulkiyet_sahibi_ad_unvan*"
-                "durum_bilgileri>fatura_ettn*durum_bilgileri>fatura_tarihi"
+                "durum_bilgileri>fatura_ettn*"
+                "durum_bilgileri>fatura_tarihi"
             ),
             "0123456789*X**",
             MULKIYET_SAHIBI_AD_UNVAN_ERROR,
         ),
         (
             (
-                "durum_bilgileri>sertifika_tarihi*durum_bilgileri>sertifika_no*"
-                "durum_bilgileri>fatura_ettn*durum_bilgileri>fatura_tarihi*"
+                "durum_bilgileri>sertifika_tarihi*"
+                "durum_bilgileri>sertifika_no*"
+                "durum_bilgileri>fatura_ettn*"
+                "durum_bilgileri>fatura_tarihi*"
                 "durum_bilgileri>mulkiyet_sahibi_vkn_tckn*"
                 "durum_bilgileri>mulkiyet_sahibi_ad_unvan"
             ),
@@ -145,7 +150,7 @@ def test_esu_mukellef_model_validation_failure_cases(
 
 
 def test_esu_mukellef_model_validation_success_case(my_model: ESUMukellefModel) -> None:
-    """Test ESUMukellefModel construction and validation success."""
+    """Test successful ESUMukellefModel instantiation."""
     try:
         ESUMukellef(model=my_model)
     except Exception as excinfo:
@@ -153,42 +158,40 @@ def test_esu_mukellef_model_validation_success_case(my_model: ESUMukellefModel) 
 
 
 def test_esu_mukellef_olustur(my_model: ESUMukellefModel) -> None:
-    """Test ESUMukellef.olustur(firma, esu) class method."""
+    """Test ESUMukellef.olustur() and ESUGuncelleme.olustur() class methods."""
+
+    durum = my_model["durum_bilgileri"]
 
     lokasyon = Lokasyon(
-        il_kodu=my_model["durum_bilgileri"]["il_kodu"],
-        ilce=my_model["durum_bilgileri"]["ilce"],
-        adres_numarası=my_model["durum_bilgileri"]["adres_numarası"],
-        koordinat=my_model["durum_bilgileri"]["koordinat"],
+        il_kodu=durum["il_kodu"],
+        ilce=durum["ilce"],
+        adres_numarası=durum["adres_numarası"],
+        koordinat=durum["koordinat"],
     )
 
     fatura = Fatura(
-        fatura_ettn=my_model["durum_bilgileri"]["fatura_ettn"],
-        fatura_tarihi=my_model["durum_bilgileri"]["fatura_tarihi"],
+        fatura_ettn=durum["fatura_ettn"],
+        fatura_tarihi=durum["fatura_tarihi"],
     )
 
     mukellef = Mukellef(
-        mukellef_vkn=my_model["durum_bilgileri"]["mukellef_vkn"],
-        mukellef_unvan=my_model["durum_bilgileri"]["mukellef_unvan"],
+        mukellef_vkn=durum["mukellef_vkn"],
+        mukellef_unvan=durum["mukellef_unvan"],
     )
 
     mulkiyet_sahibi = MulkiyetSahibi(
-        mulkiyet_sahibi_vkn_tckn=my_model["durum_bilgileri"][
-            "mulkiyet_sahibi_vkn_tckn"
-        ],
-        mulkiyet_sahibi_ad_unvan=my_model["durum_bilgileri"][
-            "mulkiyet_sahibi_ad_unvan"
-        ],
+        mulkiyet_sahibi_vkn_tckn=durum["mulkiyet_sahibi_vkn_tckn"],
+        mulkiyet_sahibi_ad_unvan=durum["mulkiyet_sahibi_ad_unvan"],
     )
 
     sertifika = Sertifika(
-        sertifika_no=my_model["durum_bilgileri"]["sertifika_no"],
-        sertifika_tarihi=my_model["durum_bilgileri"]["sertifika_tarihi"],
+        sertifika_no=durum["sertifika_no"],
+        sertifika_tarihi=durum["sertifika_tarihi"],
     )
 
     try:
         ESUMukellef.olustur(
-            esu_seri_no=my_model["durum_bilgileri"]["esu_seri_no"],
+            esu_seri_no=durum["esu_seri_no"],
             firma_kodu=my_model["firma_kodu"],
             fatura=fatura,
             lokasyon=lokasyon,
@@ -202,6 +205,20 @@ def test_esu_mukellef_olustur(my_model: ESUMukellefModel) -> None:
             fatura=fatura,
             lokasyon=lokasyon,
             mukellef=mukellef,
+        )
+        ESUGuncelleme.olustur(
+            esu_seri_no="SN001",
+            firma_kodu="J000",
+            fatura=fatura,
+            lokasyon=lokasyon,
+            mulkiyet_sahibi=mulkiyet_sahibi,
+            sertifika=sertifika,
+        )
+        ESUGuncelleme.olustur(
+            esu_seri_no="SN001",
+            firma_kodu="J000",
+            fatura=fatura,
+            lokasyon=lokasyon,
         )
     except Exception as excinfo:
         pytest.fail(f"Unexpected exception raised: {excinfo}")

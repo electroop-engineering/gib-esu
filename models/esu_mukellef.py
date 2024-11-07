@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Optional, cast
+from typing import Optional, Union, cast
 
 from pydantic import BaseModel
 from pydantic.functional_validators import AfterValidator
@@ -99,20 +99,49 @@ class ESUMukellefModel(TypedDict):
     durum_bilgileri: ESUMukellefBilgisi
 
 
-def validate_model(model: ESUMukellefModel) -> ESUMukellefModel:
+class ESUGuncellemeBilgisi(Fatura, Lokasyon, MulkiyetSahibi, Sertifika):
+    esu_seri_no: str
+
+
+class ESUGuncellemeModel(TypedDict):
+    firma_kodu: str
+    guncelleme_istek_bilgileri: ESUGuncellemeBilgisi
+
+
+def validate_model(
+    model: Union[ESUMukellefModel, ESUGuncellemeModel]
+) -> Union[ESUMukellefModel, ESUGuncellemeModel]:
+    update_request = model.get("guncelleme_istek_bilgileri")
     firma_kodu = model["firma_kodu"]
-    durum = model["durum_bilgileri"]
+    durum_obj = (
+        update_request if update_request is not None else model.get("durum_bilgileri")
+    )
+    durum = (
+        cast(ESUGuncellemeBilgisi, durum_obj)
+        if update_request is not None
+        else cast(ESUMukellefBilgisi, durum_obj)
+    )
     seri_no = durum["esu_seri_no"]
     il_kodu = durum["il_kodu"]
     ilce = durum["ilce"]
-    mukellef_vkn = durum["mukellef_vkn"]
-    mukellef_unvan = durum["mukellef_unvan"]
     sertifika_tarihi = durum.get("sertifika_tarihi", "")
     sertifika_no = durum.get("sertifika_no", "")
     fatura_tarihi = durum.get("fatura_tarihi", "")
     fatura_ettn = durum.get("fatura_ettn", "")
     mulkiyet_sahibi_vkn_tckn = durum.get("mulkiyet_sahibi_vkn_tckn", "")
     mulkiyet_sahibi_ad_unvan = durum.get("mulkiyet_sahibi_ad_unvan", "")
+
+    if update_request is None:
+        mukellef_vkn = str(durum.get("mukellef_vkn"))
+        mukellef_unvan = str(durum.get("mukellef_unvan"))
+
+        # unconditionally check mukellef_vkn
+        assert bool(re.match(MUKELLEF_VKN_REGEX, mukellef_vkn)), MUKELLEF_VKN_ERROR
+
+        # unconditionally check mukellef_unvan
+        assert (
+            len(mukellef_unvan.strip()) >= MIN_LEN_MUKELLEF_UNVAN
+        ), MUKELLEF_UNVAN_ERROR
 
     # conditions to check to enforce consistency and mutual exclusion rules
 
@@ -157,12 +186,6 @@ def validate_model(model: ESUMukellefModel) -> ESUMukellefModel:
     # unconditionally check ilce
     assert len(ilce.strip()) >= MIN_LEN_ILCE, ILCE_ERROR
 
-    # unconditionally check mukellef_vkn
-    assert bool(re.match(MUKELLEF_VKN_REGEX, mukellef_vkn)), MUKELLEF_VKN_ERROR
-
-    # unconditionally check mukellef_unvan
-    assert len(mukellef_unvan.strip()) >= MIN_LEN_MUKELLEF_UNVAN, MUKELLEF_UNVAN_ERROR
-
     # conditionally check fatura_tarihi
     if (
         not fatura_tarihi_does_not_exist
@@ -201,6 +224,9 @@ def validate_model(model: ESUMukellefModel) -> ESUMukellefModel:
 
 
 ESUMukellefModelCandidate = Annotated[ESUMukellefModel, AfterValidator(validate_model)]
+ESUGuncellemeModelCandidate = Annotated[
+    ESUGuncellemeModel, AfterValidator(validate_model)
+]
 
 
 class ESUMukellef(BaseModel):
@@ -238,3 +264,37 @@ class ESUMukellef(BaseModel):
         )
         data = {"firma_kodu": firma_kodu, "durum_bilgileri": mukellef_durum}
         return cls(model=cast(ESUMukellefModelCandidate, data))
+
+
+class ESUGuncelleme(BaseModel):
+    model: ESUGuncellemeModelCandidate
+
+    @classmethod
+    def olustur(
+        cls,
+        esu_seri_no: str,
+        firma_kodu: str,
+        fatura: Fatura,
+        lokasyon: Lokasyon,
+        mulkiyet_sahibi: Optional[MulkiyetSahibi] = None,
+        sertifika: Optional[Sertifika] = None,
+    ) -> ESUGuncelleme:
+        mukellef_durum = ESUGuncellemeBilgisi(
+            esu_seri_no=esu_seri_no,
+            fatura_ettn=fatura["fatura_ettn"],
+            fatura_tarihi=fatura["fatura_tarihi"],
+            adres_numarası=lokasyon.get("adres_numarası", ""),
+            koordinat=lokasyon.get("koordinat", ""),
+            il_kodu=lokasyon["il_kodu"],
+            ilce=lokasyon["ilce"],
+            mulkiyet_sahibi_vkn_tckn=(
+                mulkiyet_sahibi["mulkiyet_sahibi_vkn_tckn"] if mulkiyet_sahibi else ""
+            ),
+            mulkiyet_sahibi_ad_unvan=(
+                mulkiyet_sahibi["mulkiyet_sahibi_ad_unvan"] if mulkiyet_sahibi else ""
+            ),
+            sertifika_no=sertifika["sertifika_no"] if sertifika else "",
+            sertifika_tarihi=sertifika["sertifika_tarihi"] if sertifika else "",
+        )
+        data = {"firma_kodu": firma_kodu, "guncelleme_istek_bilgileri": mukellef_durum}
+        return cls(model=cast(ESUGuncellemeModelCandidate, data))

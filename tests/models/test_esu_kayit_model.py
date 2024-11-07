@@ -123,7 +123,7 @@ def test_esu_kayit_model_validation_failure_case_soket_detay_length(
 
 
 def test_esu_kayit_model_validation_success_case(my_model: ESUKayitModel) -> None:
-    """Test ESUKayitModel construction and validation success."""
+    """Test successful ESUKayitModel instantiation."""
     try:
         ESUKayit(model=my_model)
     except Exception as excinfo:
@@ -138,22 +138,25 @@ def test_esu_kayit_olustur(my_model: ESUKayitModel) -> None:
         epdk_lisans_no=my_model["epdk_lisans_no"],
     )
 
+    kayit = my_model["kayit_bilgisi"]
+    soket_detay = kayit["esu_soket_detay"]
+
     soket1 = Soket(
-        soket_no=my_model["kayit_bilgisi"]["esu_soket_detay"][0]["soket_no"],
-        soket_tip=my_model["kayit_bilgisi"]["esu_soket_detay"][0]["soket_tip"],
+        soket_no=soket_detay[0]["soket_no"],
+        soket_tip=soket_detay[0]["soket_tip"],
     )
 
     soket2 = Soket(
-        soket_no=my_model["kayit_bilgisi"]["esu_soket_detay"][1]["soket_no"],
-        soket_tip=my_model["kayit_bilgisi"]["esu_soket_detay"][1]["soket_tip"],
+        soket_no=soket_detay[1]["soket_no"],
+        soket_tip=soket_detay[1]["soket_tip"],
     )
 
     esu = ESU(
-        esu_seri_no=my_model["kayit_bilgisi"]["esu_seri_no"],
-        esu_markasi=my_model["kayit_bilgisi"]["esu_markasi"],
-        esu_modeli=my_model["kayit_bilgisi"]["esu_modeli"],
-        esu_soket_sayisi=my_model["kayit_bilgisi"]["esu_soket_sayisi"],
-        esu_soket_tipi=my_model["kayit_bilgisi"]["esu_soket_tipi"],
+        esu_seri_no=kayit["esu_seri_no"],
+        esu_markasi=kayit["esu_markasi"],
+        esu_modeli=kayit["esu_modeli"],
+        esu_soket_sayisi=kayit["esu_soket_sayisi"],
+        esu_soket_tipi=kayit["esu_soket_tipi"],
         esu_soket_detay=[soket1, soket2],
     )
 
