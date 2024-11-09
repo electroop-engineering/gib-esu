@@ -17,12 +17,14 @@ lxml==5.3.0
 lxml-stubs==0.5.1
 MarkupSafe==3.0.2
 mccabe==0.7.0
+multipledispatch==1.0.0
 mypy==1.10.1
 mypy-extensions==1.0.0
 nodeenv==1.9.1
 numpy==2.1.2
 packaging==24.1
 pandas==2.2.2
+pandas-stubs==2.2.3.241009
 platformdirs==4.3.6
 pluggy==1.5.0
 pre-commit==3.7.1
@@ -42,6 +44,7 @@ requests-file==2.1.0
 requests-toolbelt==1.0.0
 six==1.16.0
 tomli==2.0.2
+types-pytz==2024.2.0.20241003
 types-requests==2.32.0.20241016
 typing_extensions==4.12.2
 tzdata==2024.2
