@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 from dotenv import dotenv_values
 
-config = config = dotenv_values(".env")
+config = dotenv_values(".env")
 
 is_prod_api = (config["PROD_API"] or "0") != "0"  # TEST ortamı varsayılan
 use_ssl_verification = (
