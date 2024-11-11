@@ -41,4 +41,4 @@ jobs:
 
       - name: Run pytest with coverage
         run: |
-          pytest --cov=. --cov-report=term
+          pytest --cov=models --cov=service --cov-report=term-missing

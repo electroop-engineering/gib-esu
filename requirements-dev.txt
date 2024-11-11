@@ -6,3 +6,4 @@ Pygments==2.18.0
 pytest==8.2.2
 pytest-cov==6.0.0
 python-dotenv==1.0.0
+requests-mock-1.12.1

@@ -35,7 +35,7 @@ repos:
     hooks:
       - id: pytest-check
         name: pytest-check
-        entry: pytest --cov=. --cov-report=term
+        entry: pytest --cov=models --cov=service --cov-report=term-missing
         language: system
         stages: [push]
         types: [python]

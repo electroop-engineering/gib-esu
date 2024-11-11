@@ -4,7 +4,7 @@ from typing import Any, List, cast
 import pytest
 from pydantic import ValidationError
 
-from models.api_yanit import Durum, Sonuc, Yanit
+from models.servis_modelleri import Durum, Sonuc, Yanit
 
 
 @pytest.fixture(scope="module")
