@@ -165,3 +165,15 @@ def test_mukellef_kayit(
             fatura=test_fatura,
         )
     assert e.value.args[0] == "Mükellef bilgileri eksik"
+
+
+def test_toplu_kayit(
+    test_config: str,
+    test_esu: ESU,
+    test_lokasyon: Lokasyon,
+    test_mukellef: Mukellef,
+    test_fatura: Fatura,
+    test_yanit: Yanit,
+    mock_api: Any,
+) -> None:
+    """Test mukellef_kayit method."""

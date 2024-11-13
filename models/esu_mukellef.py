@@ -30,7 +30,7 @@ FATURA_ERROR = (
 FATURA_ETTN_ERROR = (
     "fatura_ettn en az " f"{MIN_LEN_FATURA_ETTN} karakter uzunluğunda olmalı"
 )
-FATURA_TARIHI_ERROR = "fatura_tarihi YYYY-MM-DD \veya DD.MM.YYYY formatında olmalıdır"
+FATURA_TARIHI_ERROR = "fatura_tarihi YYYY-MM-DD formatında olmalıdır"
 MULKİYET_ERROR = (
     "mulkiyet_sahibi_vkn_tckn ve mulkiyet_sahibi_ad_unvan tutarsız; "
     "ikisi de boş veya ikisi de dolu olmalı"

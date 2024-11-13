@@ -1,5 +1,7 @@
 import base64
+import concurrent.futures
 import json
+import os
 from enum import Enum
 from pathlib import Path
 from time import sleep
@@ -236,24 +238,26 @@ class ESUServis:
             sertifika=sertifika,
         )
 
-    def _kayit_isle(self, kayit: dict) -> ESUTopluKayitSonucu:
+    def _kayit_isle(self, kayit: dict, sonuc: TopluKayitSonuc) -> None:
         esu = self._esu_bilgisi_hazirla(kayit)
         esu_yanit = self.cihaz_kayit(esu)
-        sleep(
-            2
-        )  # ikinci istekten önce 2 saniye bekle, GİB'in cihazı kaydettiğinden emin ol
+        sleep(2)  # Biraz bekleyerek GİB'in cihazı kaydettiğinden emin ol
         mukellef = self._mukellef_bilgisi_hazirla(kayit, esu)
         mukellef_yanit = self.mukellef_kayit(mukellef)
-        return ESUTopluKayitSonucu(
-            esu_seri_no=esu.esu_seri_no,
-            esu_kayit_sonucu=esu_yanit.sonuc[0].mesaj,
-            mukellef_kayit_sonucu=mukellef_yanit.sonuc[0].mesaj,
+        sonuc.sonuclar.append(
+            ESUTopluKayitSonucu(
+                esu_seri_no=esu.esu_seri_no,
+                esu_kayit_sonucu=esu_yanit.sonuc[0].mesaj,
+                mukellef_kayit_sonucu=mukellef_yanit.sonuc[0].mesaj,
+            )
         )
 
     def toplu_kayit(
         self,
         giris_dosya_yolu: Optional[str] = None,
-        cikti_dosya_yolu: str = "gonderim_raporu.json",
+        dosyaya_yaz: Optional[bool] = None,
+        cikti_dosya_yolu: Optional[str] = None,
+        paralel: Optional[bool] = None,
     ) -> dict[str, Any]:
         csv_path = (
             Path(__file__).resolve().parent.parent
@@ -268,12 +272,27 @@ class ESUServis:
 
         print("GİB'e gönderim başlıyor...")
 
-        for _index, record in records.iterrows():
-            kayit_sonucu = self._kayit_isle(dict(record))
-            sonuc.sonuclar.append(kayit_sonucu)
-            sonuc.toplam += 1
+        if bool(paralel):
 
-        with open(cikti_dosya_yolu, "w") as f:
-            f.write(sonuc.model_dump_json(indent=4))
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=max((os.cpu_count() or 6) - 2, 1)
+            ) as executor:
+                futures = [
+                    executor.submit(self._kayit_isle, dict(record), sonuc)
+                    for _index, record in records.iterrows()
+                ]
+                concurrent.futures.wait(
+                    futures, return_when=concurrent.futures.ALL_COMPLETED
+                )
+
+        else:
+            for _index, record in records.iterrows():
+                self._kayit_isle(dict(record), sonuc)
+
+        sonuc.toplam = len(sonuc.sonuclar)
+
+        if bool(dosyaya_yaz):
+            with open(cikti_dosya_yolu or "gonderim_raporu.json", "w") as f:
+                f.write(sonuc.model_dump_json(indent=4))
 
         return sonuc.model_dump()
