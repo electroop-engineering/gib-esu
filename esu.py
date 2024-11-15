@@ -6,7 +6,9 @@ if __name__ == "__main__":
     servis = ESUServis()  # girdi olarak resources/data/esu_list.csv dosyası kullanılır
 
     baslangic = time()
-    sonuc = servis.toplu_kayit(paralel=True)
+    sonuc = servis.toplu_kayit(
+        paralel=True,
+    )
     bitis = time()
 
     print(sonuc)

@@ -1,5 +1,8 @@
+import io
+import json
 from io import StringIO
 from typing import Any
+from unittest.mock import mock_open, patch
 
 import pytest
 import requests_mock
@@ -14,7 +17,13 @@ from models.esu_mukellef import (
     Lokasyon,
     Mukellef,
 )
-from models.servis_modelleri import Durum, Sonuc, Yanit
+from models.servis_modelleri import (
+    Durum,
+    ESUTopluKayitSonucu,
+    Sonuc,
+    TopluKayitSonuc,
+    Yanit,
+)
 from service.esu_service import ESUServis
 
 
@@ -77,9 +86,59 @@ def test_yanit() -> Yanit:
 
 
 @pytest.fixture
+def test_kayit_sonuc() -> TopluKayitSonuc:
+    return TopluKayitSonuc(
+        sonuclar=[
+            ESUTopluKayitSonucu(
+                mukellef_kayit_sonucu="Basarili",
+                esu_kayit_sonucu="Basarili",
+                esu_seri_no="123",
+            ),
+        ],
+        toplam=1,
+    )
+
+
+@pytest.fixture
 def mock_api() -> Any:
     with requests_mock.Mocker() as m:
         yield m
+
+
+@pytest.fixture
+def sample_csv() -> io.StringIO:
+    csv_content = (
+        "esu_seri_no,esu_soket_tipi,esu_soket_sayisi,esu_soket_detay,"
+        "esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn,"
+        "mukellef_vkn,mukellef_unvan,sertifika_no,sertifika_tarihi,"
+        "mulkiyet_vkn,mulkiyet_unvan\n123,AC,1,Soket1:AC,"
+        "Vestel,EVC04,034,Üsküdar,2024-08-29,P012024053447,,,,,,"
+    )
+    return io.StringIO(csv_content)
+
+
+@pytest.fixture
+def sample_csv2() -> io.StringIO:
+    csv_content = (
+        "esu_seri_no,esu_soket_tipi,esu_soket_sayisi,esu_soket_detay,"
+        "esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn,"
+        "mukellef_vkn,mukellef_unvan,sertifika_no,sertifika_tarihi,"
+        "mulkiyet_vkn,mulkiyet_unvan\n123,AC,1,Soket1:AC,"
+        "Vestel,EVC04,034,Üsküdar,2024-08-19,P012024053446,,,,,,"
+    )
+    return io.StringIO(csv_content)
+
+
+@pytest.fixture
+def sample_csv3() -> io.StringIO:
+    csv_content = (
+        "esu_seri_no,esu_soket_tipi,esu_soket_sayisi,esu_soket_detay,"
+        "esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn,"
+        "mukellef_vkn,mukellef_unvan,sertifika_no,sertifika_tarihi,"
+        "mulkiyet_vkn,mulkiyet_unvan\n123,AC,1,Soket1:AC,"
+        "Vestel,EVC04,034,Üsküdar,2024-01-16,P012024153446,,,,,,"
+    )
+    return io.StringIO(csv_content)
 
 
 def test_esu_servis_instantiation(test_config: str) -> None:
@@ -168,12 +227,58 @@ def test_mukellef_kayit(
 
 
 def test_toplu_kayit(
+    sample_csv: io.StringIO,
+    sample_csv2: io.StringIO,
+    sample_csv3: io.StringIO,
     test_config: str,
     test_esu: ESU,
-    test_lokasyon: Lokasyon,
-    test_mukellef: Mukellef,
-    test_fatura: Fatura,
+    test_kayit_sonuc: TopluKayitSonuc,
     test_yanit: Yanit,
     mock_api: Any,
 ) -> None:
-    """Test mukellef_kayit method."""
+    """Test toplu_kayit method."""
+
+    servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
+
+    mock_api.post(
+        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_KAYIT}",
+        json=test_yanit.model_dump(),
+    )
+    mock_api.post(
+        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_MUKELLEF}",
+        json=test_yanit.model_dump(),
+    )
+
+    resp = servis.toplu_kayit(csv_string=sample_csv)
+
+    assert TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
+    assert (
+        TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no
+        == test_yanit.sonuc[0].esu_seri_no
+    )
+
+    resp = servis.toplu_kayit(csv_string=sample_csv2, paralel=True)
+    assert TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
+    assert (
+        TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no
+        == test_yanit.sonuc[0].esu_seri_no
+    )
+
+    dummy_output_path = "mocked_file.json"
+
+    mock_file = mock_open()
+    with patch("builtins.open", mock_file):
+        # Call the real _dosyaya_yaz method
+        servis._dosyaya_yaz(dummy_output_path, "mocked_content")
+
+    mock_file.assert_called_once_with(dummy_output_path, "w")
+    mock_file().write.assert_called_once_with("mocked_content")
+
+    with patch("service.esu_service.ESUServis._dosyaya_yaz") as mock_write:
+        resp = servis.toplu_kayit(
+            csv_string=sample_csv3, dosyaya_yaz=True, cikti_dosya_yolu=dummy_output_path
+        )
+        mock_write.assert_called_once_with(
+            cikti_dosya_yolu=dummy_output_path,
+            icerik=json.dumps(test_kayit_sonuc.model_dump(), indent=4),
+        )

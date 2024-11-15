@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 
-# numerical constants
-MIN_FIRMA_KODU = MIN_SERI_NO = 3
+from .constants import MIN_FIRMA_KODU, MIN_SERI_NO
 
 
 class ESUKapatmaBilgisi(BaseModel):

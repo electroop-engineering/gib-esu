@@ -3,16 +3,31 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field, HttpUrl, PositiveInt
 
+from models.constants import (
+    LEN_KOD,
+    MIN_FIRMA_KODU,
+    MIN_FIRMA_UNVAN,
+    MIN_SERI_NO,
+    MIN_SIFRE,
+    REGEX_API_KOD,
+    REGEX_EPDK_LISANS_KODU,
+    REGEX_FIRMA_VKN,
+    STR_API_BASARI,
+    STR_API_HATA,
+    STR_BIR,
+    STR_SIFIR,
+)
+
 
 class Durum(str, Enum):
-    SUCCESS = "success"
-    FAILURE = "basarisiz"
+    SUCCESS = STR_API_BASARI
+    FAILURE = STR_API_HATA
 
 
 class Sonuc(BaseModel):
-    esu_seri_no: str = Field(min_length=3)
+    esu_seri_no: str = Field(min_length=MIN_SERI_NO)
     sira_no: PositiveInt
-    kod: str = Field(min_length=4, max_length=4, pattern=r"^\d{4}$")
+    kod: str = Field(min_length=LEN_KOD, max_length=LEN_KOD, pattern=REGEX_API_KOD)
     mesaj: str
 
 
@@ -22,8 +37,8 @@ class Yanit(BaseModel):
 
 
 class DoğruVeyaYanlış(str, Enum):
-    YANLIŞ = "0"
-    DOĞRU = "1"
+    YANLIŞ = STR_SIFIR
+    DOĞRU = STR_BIR
 
 
 class APIParametreleri(BaseModel):
@@ -45,15 +60,15 @@ class Sabitler(BaseModel):
 
 
 class ESUServisParametreleri(BaseModel):
-    FIRMA_UNVAN: str = Field(min_length=3)
-    EPDK_LISANS_KODU: str = Field(pattern=r"^ŞH/\d{5}-\d+/\d{5}$")
-    FIRMA_VKN: str = Field(pattern=r"\b\d{10}\b")
-    GIB_FIRMA_KODU: str = Field(min_length=3)
-    GIB_API_SIFRE: str = Field(min_length=6)
+    FIRMA_UNVAN: str = Field(min_length=MIN_FIRMA_UNVAN)
+    EPDK_LISANS_KODU: str = Field(pattern=REGEX_EPDK_LISANS_KODU)
+    FIRMA_VKN: str = Field(pattern=REGEX_FIRMA_VKN)
+    GIB_FIRMA_KODU: str = Field(min_length=MIN_FIRMA_KODU)
+    GIB_API_SIFRE: str = Field(min_length=MIN_SIFRE)
     PROD_API: DoğruVeyaYanlış
     SSL_DOGRULAMA: DoğruVeyaYanlış
     TEST_FIRMA_KULLAN: DoğruVeyaYanlış
-    GIB_TEST_FIRMA_VKN: str = Field(pattern=r"\b\d{10}\b")
+    GIB_TEST_FIRMA_VKN: str = Field(pattern=REGEX_FIRMA_VKN)
 
 
 class ESUKayitSonucu(BaseModel):
@@ -65,7 +80,7 @@ class MukellefKayitSonucu(BaseModel):
 
 
 class ESUTopluKayitSonucu(ESUKayitSonucu, MukellefKayitSonucu):
-    esu_seri_no: str = Field(min_length=3)
+    esu_seri_no: str = Field(min_length=MIN_SERI_NO)
 
 
 class TopluKayitSonuc(BaseModel):

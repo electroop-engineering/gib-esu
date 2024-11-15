@@ -4,9 +4,9 @@ from typing import List, cast
 import pytest
 from pydantic import ValidationError
 
+from models.constants import ERROR_SOKET_DETAY_UZUNLUK
 from models.esu_kayit import (
     ESU,
-    SOKET_DETAY_UZUNLUK_ERROR,
     ESUKayit,
     ESUKayitModel,
     ESUSoketTipi,
@@ -104,7 +104,7 @@ def test_esu_kayit_model_validation_failure_case_soket_detay_length(
         ESUKayit(model=cast(ESUKayitModel, test_model))
 
     assert (
-        str(e.value.errors()[0].get("msg")).split(", ")[1] == SOKET_DETAY_UZUNLUK_ERROR
+        str(e.value.errors()[0].get("msg")).split(", ")[1] == ERROR_SOKET_DETAY_UZUNLUK
     )
 
 
