@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from pydantic.functional_validators import AfterValidator
 from typing_extensions import Annotated
 
-from .constants import (
+from .sabitler import (
     ERROR_SOKET_DETAY_ACDC,
     ERROR_SOKET_DETAY_TIP,
     ERROR_SOKET_DETAY_UZUNLUK,

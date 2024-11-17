@@ -12,28 +12,10 @@ from dotenv import dotenv_values
 from pydantic import HttpUrl
 
 from helpers.py_utils import PyUtils
-from models.constants import (
-    ERROR_MUKELLEF_EKSIK,
-    F_ESU_SERI_NO,
-    F_FATURA_ETTN,
-    F_FATURA_TARIHI,
-    F_IL_KODU,
-    F_ILCE,
-    F_MARKA,
-    F_MODEL,
-    F_MUKELLEF_UNVAN,
-    F_MUKELLEF_VKN,
-    F_MULKIYET_UNVAN,
-    F_MULKİYET_VKN,
-    F_SERTIFIKA_NO,
-    F_SERTIFIKA_TARIHI,
-    F_SOKET_DETAY,
-    F_SOKET_SAYISI,
-    F_SOKET_TIPI,
-    STR_BOS,
-)
+from models.esu_kapatma import ESUKapatma, ESUKapatmaBilgisi, ESUKapatmaModel
 from models.esu_kayit import ESU, ESUKayit, Firma, Soket
 from models.esu_mukellef import (
+    ESUGuncelleme,
     ESUMukellef,
     Fatura,
     Lokasyon,
@@ -41,11 +23,26 @@ from models.esu_mukellef import (
     MulkiyetSahibi,
     Sertifika,
 )
+from models.sabitler import (
+    ERROR_KAYIT_BILGILERI_EKSIK,
+    ERROR_MUKELLEF_EKSIK,
+    F_ESU_SERI_NO,
+    F_FATURA_ETTN,
+    F_MARKA,
+    F_MODEL,
+    F_SAHIP_VKN_TCKN,
+    F_SOKET_DETAY,
+    F_SOKET_SAYISI,
+    F_SOKET_TIPI,
+    STR_BOS,
+)
 from models.servis_modelleri import (
     APIParametreleri,
     DoğruVeyaYanlış,
     ESUServisParametreleri,
+    ESUTopluGuncellemeSonucu,
     ESUTopluKayitSonucu,
+    TopluGuncellemeSonuc,
     TopluKayitSonuc,
     Yanit,
 )
@@ -203,55 +200,14 @@ class ESUServis:
         )
 
     def _mukellef_bilgisi_hazirla(self, kayit: dict, esu: ESU) -> ESUMukellef:
-        lokasyon = Lokasyon(
-            il_kodu=kayit[F_IL_KODU],
-            ilce=kayit[F_ILCE],
-            adres_numarası=STR_BOS,
-            koordinat=STR_BOS,
-        )
-
-        mukellef = Mukellef(
-            mukellef_vkn=(
-                PyUtils.pad_with_zeroes(kayit[F_MUKELLEF_VKN])
-                if kayit.get(F_MUKELLEF_VKN)
-                else self._firma.firma_vkn
-            ),
-            mukellef_unvan=(
-                kayit[F_MUKELLEF_UNVAN]
-                if kayit.get(F_MUKELLEF_UNVAN)
-                else self._firma.firma_unvan
-            ),
-        )
-
-        fatura = Fatura(
-            fatura_tarihi=(
-                kayit[F_FATURA_TARIHI]
-                if not kayit.get(F_MULKİYET_VKN) and kayit[F_FATURA_TARIHI]
-                else STR_BOS
-            ),
-            fatura_ettn=(
-                kayit[F_FATURA_ETTN] if not kayit.get(F_MULKİYET_VKN) else STR_BOS
-            ),
-        )
-
-        sertifika = Sertifika(
-            sertifika_no=(
-                kayit[F_SERTIFIKA_NO] if kayit.get(F_SERTIFIKA_NO) else STR_BOS
-            ),
-            sertifika_tarihi=(
-                kayit[F_SERTIFIKA_TARIHI] if kayit.get(F_SERTIFIKA_TARIHI) else STR_BOS
-            ),
-        )
-
-        mulkiyet = MulkiyetSahibi(
-            mulkiyet_sahibi_vkn_tckn=(
-                PyUtils.pad_with_zeroes(kayit[F_MULKİYET_VKN])
-                if kayit.get(F_MULKİYET_VKN)
-                else STR_BOS
-            ),
-            mulkiyet_sahibi_ad_unvan=(
-                kayit[F_MULKIYET_UNVAN] if kayit.get(F_MULKIYET_UNVAN) else STR_BOS
-            ),
+        lokasyon = Lokasyon(**kayit)
+        mukellef = Mukellef(**kayit)
+        fatura = Fatura(**kayit) if not kayit.get(F_SAHIP_VKN_TCKN) else Fatura()
+        sertifika = Sertifika(**kayit) if not kayit.get(F_FATURA_ETTN) else Sertifika()
+        mulkiyet = (
+            MulkiyetSahibi(**kayit)
+            if not kayit.get(F_FATURA_ETTN)
+            else MulkiyetSahibi()
         )
 
         return ESUMukellef.olustur(
@@ -328,3 +284,139 @@ class ESUServis:
             )
 
         return sonuc.model_dump()
+
+    def kayit_guncelle(
+        self,
+        kayit_bilgileri: Union[ESUGuncelleme, Any] = None,
+        esu_seri_no: Optional[str] = None,
+        lokasyon: Optional[Lokasyon] = None,
+        fatura: Optional[Fatura] = None,
+        mulkiyet_sahibi: Optional[MulkiyetSahibi] = None,
+        sertifika: Optional[Sertifika] = None,
+    ) -> Yanit:
+        veri: Optional[ESUGuncelleme] = None
+        if not isinstance(kayit_bilgileri, ESUGuncelleme):
+            if not esu_seri_no or not lokasyon or not (fatura or mulkiyet_sahibi):
+                raise ValueError(ERROR_KAYIT_BILGILERI_EKSIK)
+
+            _fatura = (
+                fatura
+                if fatura is not None
+                else Fatura(fatura_tarihi=STR_BOS, fatura_ettn=STR_BOS)
+            )
+            _mulkiyet_sahibi = (
+                mulkiyet_sahibi
+                if mulkiyet_sahibi is not None
+                else MulkiyetSahibi(
+                    mulkiyet_sahibi_vkn_tckn=STR_BOS, mulkiyet_sahibi_ad_unvan=STR_BOS
+                )
+            )
+            _sertifika = (
+                sertifika
+                if sertifika is not None
+                else Sertifika(sertifika_no=STR_BOS, sertifika_tarihi=STR_BOS)
+            )
+            veri = ESUGuncelleme.olustur(
+                esu_seri_no=esu_seri_no,
+                firma_kodu=self._firma.firma_kodu,
+                fatura=_fatura,
+                lokasyon=lokasyon,
+                mulkiyet_sahibi=_mulkiyet_sahibi,
+                sertifika=_sertifika,
+            )
+        elif isinstance(kayit_bilgileri, ESUGuncelleme):
+            veri = kayit_bilgileri
+
+        print(veri.model.model_dump())
+        return self._api_isteği(
+            veri.model.model_dump(), istek_tipi=ESUServis.ISTEK_TIPI.ESU_GUNCELLEME
+        )
+
+    def _guncelleme_kaydi_isle(self, kayit: dict, sonuc: TopluGuncellemeSonuc) -> None:
+
+        guncelleme_yanit = self.kayit_guncelle(
+            esu_seri_no=kayit[F_ESU_SERI_NO],
+            lokasyon=Lokasyon(**kayit),
+            fatura=Fatura(**kayit) if not kayit.get(F_SAHIP_VKN_TCKN) else Fatura(),
+            sertifika=(
+                Sertifika(**kayit) if not kayit.get(F_FATURA_ETTN) else Sertifika()
+            ),
+            mulkiyet_sahibi=(
+                MulkiyetSahibi(**kayit)
+                if not kayit.get(F_FATURA_ETTN)
+                else MulkiyetSahibi()
+            ),
+        )
+        sonuc.sonuclar.append(
+            ESUTopluGuncellemeSonucu(
+                esu_seri_no=kayit[F_ESU_SERI_NO],
+                guncelleme_kayit_sonucu=guncelleme_yanit.sonuc[0].mesaj,
+            )
+        )
+
+    def toplu_guncelle(
+        self,
+        giris_dosya_yolu: Optional[str] = None,
+        csv_string: Optional[io.StringIO] = None,
+        dosyaya_yaz: Optional[bool] = None,
+        cikti_dosya_yolu: Optional[str] = None,
+        paralel: Optional[bool] = None,
+    ) -> dict[str, Any]:
+        csv_path = (
+            Path(__file__).resolve().parent.parent
+            / "resources"
+            / "data"
+            / "esu_list.csv"
+        )
+        records = PyUtils.read_csv_input(giris_dosya_yolu or csv_string or csv_path)
+        print(f"{giris_dosya_yolu or csv_path} csv giriş dosyası okundu")
+
+        sonuc = TopluGuncellemeSonuc(sonuclar=[], toplam=0)
+
+        print("GİB'e gönderim başlıyor...")
+
+        if bool(paralel):
+
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=max((os.cpu_count() or 6) - 2, 1)
+            ) as executor:
+                futures = [
+                    executor.submit(self._guncelleme_kaydi_isle, dict(record), sonuc)
+                    for _, record in records.iterrows()
+                ]
+                concurrent.futures.wait(
+                    futures, return_when=concurrent.futures.ALL_COMPLETED
+                )
+
+        else:
+            for _, record in records.iterrows():
+                self._guncelleme_kaydi_isle(dict(record), sonuc)
+
+        sonuc.toplam = len(sonuc.sonuclar)
+
+        if bool(dosyaya_yaz):
+            self._dosyaya_yaz(
+                cikti_dosya_yolu=(cikti_dosya_yolu or "gonderim_raporu.json"),
+                icerik=sonuc.model_dump_json(indent=4),
+            )
+
+        return sonuc.model_dump()
+
+    def cihaz_kapatma(
+        self,
+        cihaz_bilgisi: Optional[ESUKapatma] = None,
+        esu_seri_no: str = "",
+    ) -> Yanit:
+        cihaz = (
+            cihaz_bilgisi
+            if isinstance(cihaz_bilgisi, ESUKapatma)
+            else ESUKapatma(
+                model=ESUKapatmaModel(
+                    firma_kodu=self._firma.firma_kodu,
+                    kapatma_bilgisi=ESUKapatmaBilgisi(esu_seri_no=esu_seri_no),
+                )
+            )
+        )
+        return self._api_isteği(
+            cihaz.model.model_dump(), istek_tipi=ESUServis.ISTEK_TIPI.ESU_KAPATMA
+        )

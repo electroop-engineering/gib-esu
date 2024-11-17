@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from .constants import MIN_FIRMA_KODU, MIN_SERI_NO
+from .sabitler import MIN_FIRMA_KODU, MIN_SERI_NO
 
 
 class ESUKapatmaBilgisi(BaseModel):

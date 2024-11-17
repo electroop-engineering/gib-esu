@@ -5,7 +5,7 @@ import pandas as pd
 from pandas import DataFrame
 from pydantic import FilePath
 
-from models.constants import F_ESU_SERI_NO, F_IL_KODU, F_SOKET_SAYISI, LEN_VKN, STR_BOS
+from models.sabitler import F_ESU_SERI_NO, F_IL_KODU, F_SOKET_SAYISI, LEN_VKN, STR_BOS
 
 
 class PyUtils:

@@ -4,7 +4,6 @@ from typing import List, cast
 import pytest
 from pydantic import ValidationError
 
-from models.constants import ERROR_SOKET_DETAY_UZUNLUK
 from models.esu_kayit import (
     ESU,
     ESUKayit,
@@ -14,6 +13,7 @@ from models.esu_kayit import (
     Soket,
     SoketTipi,
 )
+from models.sabitler import ERROR_SOKET_DETAY_UZUNLUK
 
 
 @pytest.fixture(scope="module")
@@ -118,34 +118,17 @@ def test_esu_kayit_model_validation_success_case(my_model: ESUKayitModel) -> Non
 
 def test_esu_kayit_olustur(my_model: ESUKayitModel) -> None:
     """Test ESUKayit.olustur(firma, esu) class method."""
-    firma = Firma(
-        firma_kodu=my_model.firma_kodu,
-        firma_vkn=my_model.firma_vkn,
-        firma_unvan=my_model.firma_unvan,
-        epdk_lisans_no=my_model.epdk_lisans_no,
-    )
+    firma = Firma(**my_model.model_dump())
 
     kayit: ESU = my_model.kayit_bilgisi
     soket_detay = kayit.esu_soket_detay
 
-    soket1 = Soket(
-        soket_no=soket_detay[0].soket_no,
-        soket_tip=soket_detay[0].soket_tip,
-    )
+    soket1 = Soket(**soket_detay[0].model_dump())
 
-    soket2 = Soket(
-        soket_no=soket_detay[1].soket_no,
-        soket_tip=soket_detay[1].soket_tip,
-    )
+    soket2 = Soket(**soket_detay[1].model_dump())
 
-    esu = ESU(
-        esu_seri_no=kayit.esu_seri_no,
-        esu_markasi=kayit.esu_markasi,
-        esu_modeli=kayit.esu_modeli,
-        esu_soket_sayisi=kayit.esu_soket_sayisi,
-        esu_soket_tipi=kayit.esu_soket_tipi,
-        esu_soket_detay=[soket1, soket2],
-    )
+    esu = ESU(**kayit.model_dump())
+    esu.esu_soket_detay = [soket1, soket2]
 
     try:
         ESUKayit.olustur(firma=firma, esu=esu)

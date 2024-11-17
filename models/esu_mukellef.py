@@ -3,11 +3,13 @@ from __future__ import annotations
 import re
 from typing import Optional, Union, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from pydantic.functional_validators import AfterValidator
 from typing_extensions import Annotated
 
-from .constants import (
+from helpers.py_utils import PyUtils
+
+from .sabitler import (
     ERROR_FATURA,
     ERROR_FATURA_ETTN,
     ERROR_FATURA_TARIHI,
@@ -34,36 +36,51 @@ from .constants import (
     REGEX_MULKIYET_SAHIBI_VKN_TCKN,
     REGEX_TARIH,
     STR_BOS,
+    CustomBaseModel,
 )
 
 
-class Lokasyon(BaseModel):
+class Lokasyon(CustomBaseModel):
     il_kodu: str = Field(
         min_length=LEN_IL_KODU, max_length=LEN_IL_KODU, pattern=REGEX_IL_KODU
     )
     ilce: str = Field(min_length=MIN_LEN_ILCE)
-    adres_numarası: str
-    koordinat: str
+    adres_numarası: Optional[str] = STR_BOS
+    koordinat: Optional[str] = STR_BOS
 
 
-class Mukellef(BaseModel):
-    mukellef_vkn: str
-    mukellef_unvan: str
+class Mukellef(CustomBaseModel):
+    mukellef_vkn: str = STR_BOS
+    mukellef_unvan: str = STR_BOS
+
+    @field_validator("mukellef_vkn", mode="before")
+    @classmethod
+    def left_pad_zeroes_till_ten(cls, v: str) -> str:
+        return PyUtils.pad_with_zeroes(v) if v else STR_BOS
 
 
-class Sertifika(BaseModel):
-    sertifika_no: str
-    sertifika_tarihi: str
+class Sertifika(CustomBaseModel):
+    sertifika_no: str = STR_BOS
+    sertifika_tarihi: str = STR_BOS
 
 
-class Fatura(BaseModel):
-    fatura_tarihi: str  # Mülkiyet sahibi, lokasyon SAHİBİ ise dolu
-    fatura_ettn: str  # Mülkiyet sahibi, lokasyon SAHİBİ ise dolu
+class Fatura(CustomBaseModel):
+    fatura_tarihi: str = STR_BOS  # Mülkiyet sahibi, lokasyon SAHİBİ ise dolu
+    fatura_ettn: str = STR_BOS  # Mülkiyet sahibi, lokasyon SAHİBİ ise dolu
 
 
-class MulkiyetSahibi(BaseModel):
-    mulkiyet_sahibi_vkn_tckn: str  # Mülkiyet sahibi, lokasyon SAHİBİ değilse dolu
-    mulkiyet_sahibi_ad_unvan: str  # Mülkiyet sahibi, lokasyon SAHİBİ değilse dolu
+class MulkiyetSahibi(CustomBaseModel):
+    mulkiyet_sahibi_vkn_tckn: str = (
+        STR_BOS  # Mülkiyet sahibi, lokasyon SAHİBİ değilse dolu
+    )
+    mulkiyet_sahibi_ad_unvan: str = (
+        STR_BOS  # Mülkiyet sahibi, lokasyon SAHİBİ değilse dolu
+    )
+
+    @field_validator("mulkiyet_sahibi_vkn_tckn", mode="before")
+    @classmethod
+    def left_pad_zeroes_till_ten(cls, v: str) -> str:
+        return PyUtils.pad_with_zeroes(v) if v else STR_BOS
 
 
 class ESUMukellefBilgisi(Fatura, Lokasyon, Mukellef, MulkiyetSahibi, Sertifika):

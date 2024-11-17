@@ -27,7 +27,7 @@ def my_model() -> ESUMukellefModel:
             ilce="Beşiktaş",
             adres_numarası="",
             koordinat="",
-            mukellef_vkn="0123456789",
+            mukellef_vkn="123456789",
             mukellef_unvan="Test Mukellef",
             sertifika_no="",
             sertifika_tarihi="",
@@ -72,7 +72,6 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
         ("durum_bilgileri>esu_seri_no", "A"),
         ("durum_bilgileri>il_kodu", "34"),
         ("durum_bilgileri>ilce", "Ç"),
-        ("durum_bilgileri>mukellef_vkn", "1234"),
         ("durum_bilgileri>mukellef_unvan", "F"),
         ("durum_bilgileri>fatura_tarihi", "23-05-2024"),
         ("durum_bilgileri>fatura_ettn", "XX"),
@@ -83,7 +82,7 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
                 "durum_bilgileri>fatura_ettn*"
                 "durum_bilgileri>fatura_tarihi"
             ),
-            "012345678901*ABC A.Ş.**",
+            "912345678901*ABC A.Ş.**",
         ),
         (
             (
@@ -139,32 +138,15 @@ def test_esu_mukellef_olustur(my_model: ESUMukellefModel) -> None:
 
     durum = my_model.durum_bilgileri
 
-    lokasyon = Lokasyon(
-        il_kodu=durum.il_kodu,
-        ilce=durum.ilce,
-        adres_numarası=durum.adres_numarası,
-        koordinat=durum.koordinat,
-    )
+    lokasyon = Lokasyon(**durum.model_dump())
 
-    fatura = Fatura(
-        fatura_ettn=durum.fatura_ettn,
-        fatura_tarihi=durum.fatura_tarihi,
-    )
+    fatura = Fatura(**durum.model_dump())
 
-    mukellef = Mukellef(
-        mukellef_vkn=durum.mukellef_vkn,
-        mukellef_unvan=durum.mukellef_unvan,
-    )
+    mukellef = Mukellef(**durum.model_dump())
 
-    mulkiyet_sahibi = MulkiyetSahibi(
-        mulkiyet_sahibi_vkn_tckn=durum.mulkiyet_sahibi_vkn_tckn,
-        mulkiyet_sahibi_ad_unvan=durum.mulkiyet_sahibi_ad_unvan,
-    )
+    mulkiyet_sahibi = MulkiyetSahibi(**durum.model_dump())
 
-    sertifika = Sertifika(
-        sertifika_no=durum.sertifika_no,
-        sertifika_tarihi=durum.sertifika_tarihi,
-    )
+    sertifika = Sertifika(**durum.model_dump())
 
     try:
         ESUMukellef.olustur(

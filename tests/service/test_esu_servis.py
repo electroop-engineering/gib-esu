@@ -8,23 +8,32 @@ import pytest
 import requests_mock
 from dotenv import dotenv_values
 
+from models.esu_kapatma import ESUKapatma, ESUKapatmaBilgisi, ESUKapatmaModel
 from models.esu_kayit import ESU, ESUSoketTipi, Soket, SoketTipi
 from models.esu_mukellef import (
+    ESUGuncelleme,
+    ESUGuncellemeBilgisi,
+    ESUGuncellemeModel,
     ESUMukellef,
     ESUMukellefBilgisi,
     ESUMukellefModel,
     Fatura,
     Lokasyon,
     Mukellef,
+    MulkiyetSahibi,
+    Sertifika,
 )
+from models.sabitler import ERROR_KAYIT_BILGILERI_EKSIK, ERROR_MUKELLEF_EKSIK
 from models.servis_modelleri import (
     Durum,
+    ESUTopluGuncellemeSonucu,
     ESUTopluKayitSonucu,
     Sonuc,
+    TopluGuncellemeSonuc,
     TopluKayitSonuc,
     Yanit,
 )
-from service.esu_service import ESUServis
+from services.esu_service import ESUServis
 
 
 @pytest.fixture
@@ -100,6 +109,19 @@ def test_kayit_sonuc() -> TopluKayitSonuc:
 
 
 @pytest.fixture
+def test_guncelleme_sonuc() -> TopluGuncellemeSonuc:
+    return TopluGuncellemeSonuc(
+        sonuclar=[
+            ESUTopluGuncellemeSonucu(
+                guncelleme_kayit_sonucu="Basarili",
+                esu_seri_no="123",
+            ),
+        ],
+        toplam=1,
+    )
+
+
+@pytest.fixture
 def mock_api() -> Any:
     with requests_mock.Mocker() as m:
         yield m
@@ -111,8 +133,8 @@ def sample_csv() -> io.StringIO:
         "esu_seri_no,esu_soket_tipi,esu_soket_sayisi,esu_soket_detay,"
         "esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn,"
         "mukellef_vkn,mukellef_unvan,sertifika_no,sertifika_tarihi,"
-        "mulkiyet_vkn,mulkiyet_unvan\n123,AC,1,Soket1:AC,"
-        "Vestel,EVC04,034,Üsküdar,2024-08-29,P012024053447,,,,,,"
+        "mulkiyet_sahibi_vkn_tckn,mulkiyet_sahibi_ad_unvan\n123,AC,1,Soket1:AC,"
+        "Vestel,EVC04,034,Üsküdar,2024-08-29,P012024053447,999,AB A.Ş.,,,,"
     )
     return io.StringIO(csv_content)
 
@@ -123,8 +145,8 @@ def sample_csv2() -> io.StringIO:
         "esu_seri_no,esu_soket_tipi,esu_soket_sayisi,esu_soket_detay,"
         "esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn,"
         "mukellef_vkn,mukellef_unvan,sertifika_no,sertifika_tarihi,"
-        "mulkiyet_vkn,mulkiyet_unvan\n123,AC,1,Soket1:AC,"
-        "Vestel,EVC04,034,Üsküdar,2024-08-19,P012024053446,,,,,,"
+        "mulkiyet_sahibi_vkn_tckn,mulkiyet_sahibi_ad_unvan\n123,AC,1,Soket1:AC,"
+        "Vestel,EVC04,034,Üsküdar,2024-08-19,P012024053446,999,AB A.Ş.,,,,"
     )
     return io.StringIO(csv_content)
 
@@ -135,8 +157,8 @@ def sample_csv3() -> io.StringIO:
         "esu_seri_no,esu_soket_tipi,esu_soket_sayisi,esu_soket_detay,"
         "esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn,"
         "mukellef_vkn,mukellef_unvan,sertifika_no,sertifika_tarihi,"
-        "mulkiyet_vkn,mulkiyet_unvan\n123,AC,1,Soket1:AC,"
-        "Vestel,EVC04,034,Üsküdar,2024-01-16,P012024153446,,,,,,"
+        "mulkiyet_sahibi_vkn_tckn,mulkiyet_sahibi_ad_unvan\n123,AC,1,Soket1:AC,"
+        "Vestel,EVC04,034,Üsküdar,2024-01-16,P012024153446,999,AB A.Ş.,,,,"
     )
     return io.StringIO(csv_content)
 
@@ -198,18 +220,11 @@ def test_mukellef_kayit(
                 firma_kodu=servis._firma.firma_kodu,
                 durum_bilgileri=ESUMukellefBilgisi(
                     esu_seri_no=test_esu.esu_seri_no,
-                    fatura_ettn=test_fatura.fatura_ettn,
-                    fatura_tarihi=test_fatura.fatura_tarihi,
-                    mukellef_vkn=test_mukellef.mukellef_vkn,
-                    mukellef_unvan=test_mukellef.mukellef_unvan,
-                    il_kodu=test_lokasyon.il_kodu,
-                    ilce=test_lokasyon.ilce,
-                    adres_numarası=test_lokasyon.adres_numarası,
-                    koordinat=test_lokasyon.koordinat,
-                    sertifika_no="",
-                    sertifika_tarihi="",
-                    mulkiyet_sahibi_vkn_tckn="",
-                    mulkiyet_sahibi_ad_unvan="",
+                    **test_fatura.model_dump(),
+                    **test_mukellef.model_dump(),
+                    **test_lokasyon.model_dump(),
+                    **Sertifika().model_dump(),
+                    **MulkiyetSahibi().model_dump(),
                 ),
             )
         )
@@ -223,7 +238,7 @@ def test_mukellef_kayit(
             # mukellef missing mukellef=test_mukellef,
             fatura=test_fatura,
         )
-    assert e.value.args[0] == "Mükellef bilgileri eksik"
+    assert e.value.args[0] == ERROR_MUKELLEF_EKSIK
 
 
 def test_toplu_kayit(
@@ -274,7 +289,7 @@ def test_toplu_kayit(
     mock_file.assert_called_once_with(dummy_output_path, "w")
     mock_file().write.assert_called_once_with("mocked_content")
 
-    with patch("service.esu_service.ESUServis._dosyaya_yaz") as mock_write:
+    with patch("services.esu_service.ESUServis._dosyaya_yaz") as mock_write:
         resp = servis.toplu_kayit(
             csv_string=sample_csv3, dosyaya_yaz=True, cikti_dosya_yolu=dummy_output_path
         )
@@ -282,3 +297,130 @@ def test_toplu_kayit(
             cikti_dosya_yolu=dummy_output_path,
             icerik=json.dumps(test_kayit_sonuc.model_dump(), indent=4),
         )
+
+
+def test_kayit_guncelle(
+    test_config: str,
+    test_esu: ESU,
+    test_lokasyon: Lokasyon,
+    test_fatura: Fatura,
+    test_yanit: Yanit,
+    mock_api: Any,
+) -> None:
+    """Test kayit_guncelle method."""
+
+    servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
+
+    mock_api.post(
+        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_GUNCELLEME}",
+        json=test_yanit.model_dump(),
+    )
+
+    resp = servis.kayit_guncelle(
+        kayit_bilgileri=ESUGuncelleme(
+            model=ESUGuncellemeModel(
+                firma_kodu=servis._firma.firma_kodu,
+                guncelleme_istek_bilgileri=ESUGuncellemeBilgisi(
+                    **test_lokasyon.model_dump(),
+                    **test_fatura.model_dump(),
+                    esu_seri_no=test_esu.esu_seri_no,
+                    **Sertifika().model_dump(),
+                    **MulkiyetSahibi().model_dump(),
+                ),
+            )
+        )
+    )
+    assert resp.sonuc[0].esu_seri_no == test_esu.esu_seri_no
+
+    with pytest.raises(ValueError) as e:
+        resp = servis.kayit_guncelle(
+            # esu_seri_no missing
+            lokasyon=test_lokasyon,
+            fatura=test_fatura,
+        )
+    assert e.value.args[0] == ERROR_KAYIT_BILGILERI_EKSIK
+
+
+def test_toplu_guncelle(
+    sample_csv: io.StringIO,
+    sample_csv2: io.StringIO,
+    sample_csv3: io.StringIO,
+    test_config: str,
+    test_esu: ESU,
+    test_guncelleme_sonuc: TopluGuncellemeSonuc,
+    test_yanit: Yanit,
+    mock_api: Any,
+) -> None:
+    """Test toplu_guncelle method."""
+
+    servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
+
+    mock_api.post(
+        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_GUNCELLEME}",
+        json=test_yanit.model_dump(),
+    )
+
+    resp = servis.toplu_guncelle(csv_string=sample_csv)
+
+    assert TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
+    assert (
+        TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no
+        == test_yanit.sonuc[0].esu_seri_no
+    )
+
+    resp = servis.toplu_guncelle(csv_string=sample_csv2, paralel=True)
+    assert TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
+    assert (
+        TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no
+        == test_yanit.sonuc[0].esu_seri_no
+    )
+
+    dummy_output_path = "mocked_file.json"
+
+    mock_file = mock_open()
+    with patch("builtins.open", mock_file):
+        # Call the real _dosyaya_yaz method
+        servis._dosyaya_yaz(dummy_output_path, "mocked_content")
+
+    mock_file.assert_called_once_with(dummy_output_path, "w")
+    mock_file().write.assert_called_once_with("mocked_content")
+
+    with patch("services.esu_service.ESUServis._dosyaya_yaz") as mock_write:
+        resp = servis.toplu_guncelle(
+            csv_string=sample_csv3, dosyaya_yaz=True, cikti_dosya_yolu=dummy_output_path
+        )
+        mock_write.assert_called_once_with(
+            cikti_dosya_yolu=dummy_output_path,
+            icerik=json.dumps(test_guncelleme_sonuc.model_dump(), indent=4),
+        )
+
+
+def test_cihaz_kapatma(
+    test_config: str,
+    test_esu: ESU,
+    test_yanit: Yanit,
+    mock_api: Any,
+) -> None:
+    """Test cihaz_kapatma method."""
+
+    servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
+
+    mock_api.post(
+        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_KAPATMA}",
+        json=test_yanit.model_dump(),
+    )
+
+    resp = servis.cihaz_kapatma(
+        cihaz_bilgisi=ESUKapatma(
+            model=ESUKapatmaModel(
+                firma_kodu=servis._firma.firma_kodu,
+                kapatma_bilgisi=ESUKapatmaBilgisi(
+                    esu_seri_no=test_esu.esu_seri_no,
+                ),
+            )
+        )
+    )
+    assert resp.sonuc[0].esu_seri_no == test_esu.esu_seri_no
+
+    resp = servis.cihaz_kapatma(esu_seri_no=test_esu.esu_seri_no)
+    assert resp.sonuc[0].esu_seri_no == test_esu.esu_seri_no

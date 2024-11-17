@@ -1,5 +1,7 @@
 # string constants
 
+from pydantic import BaseModel, ConfigDict
+
 F_DURUM_BILGILERI = "durum_bilgileri"
 F_ESU_SERI_NO = "esu_seri_no"
 F_FATURA_ETTN = "fatura_ettn"
@@ -13,8 +15,6 @@ F_MARKA = "esu_markasi"
 F_MODEL = "esu_modeli"
 F_MUKELLEF_UNVAN = "mukellef_unvan"
 F_MUKELLEF_VKN = "mukellef_vkn"
-F_MULKIYET_UNVAN = "mulkiyet_unvan"
-F_MULKİYET_VKN = "mulkiyet_vkn"
 F_SAHIP_AD_UNVAN = "mulkiyet_sahibi_ad_unvan"
 F_SAHIP_VKN_TCKN = "mulkiyet_sahibi_vkn_tckn"
 F_SERTIFIKA_NO = "sertifika_no"
@@ -64,6 +64,7 @@ ERROR_FATURA_ETTN = (
     f"{F_FATURA_ETTN} en az " f"{MIN_LEN_FATURA_ETTN} karakter uzunluğunda olmalı"
 )
 ERROR_FATURA_TARIHI = f"{F_FATURA_TARIHI} {STR_TARIH_FORMATI} formatında olmalıdır"
+ERROR_KAYIT_BILGILERI_EKSIK = "Kayıt bilgileri eksik"
 ERROR_MUKELLEF_EKSIK = "Mükellef bilgileri eksik"
 ERROR_MUKELLEF_UNVAN = (
     f"{F_MUKELLEF_UNVAN} en az " f"{MIN_LEN_MUKELLEF_UNVAN} karakter uzunluğunda olmalı"
@@ -97,3 +98,10 @@ ERROR_YA_FATURA_YA_MULKIYET = (
     f"{F_FATURA_ETTN} veya {F_SAHIP_VKN_TCKN} "
     "alanlarından biri ve yalnız biri mevcut olmalıdır"
 )
+
+# custom base model
+
+
+class CustomBaseModel(BaseModel):
+    # ignore extra fields
+    model_config = ConfigDict(extra="ignore")

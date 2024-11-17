@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field, HttpUrl, PositiveInt
 
-from models.constants import (
+from models.sabitler import (
     LEN_KOD,
     MIN_FIRMA_KODU,
     MIN_FIRMA_UNVAN,
@@ -85,4 +85,14 @@ class ESUTopluKayitSonucu(ESUKayitSonucu, MukellefKayitSonucu):
 
 class TopluKayitSonuc(BaseModel):
     sonuclar: List[ESUTopluKayitSonucu]
+    toplam: int
+
+
+class ESUTopluGuncellemeSonucu(BaseModel):
+    esu_seri_no: str = Field(min_length=MIN_SERI_NO)
+    guncelleme_kayit_sonucu: str
+
+
+class TopluGuncellemeSonuc(BaseModel):
+    sonuclar: List[ESUTopluGuncellemeSonucu]
     toplam: int

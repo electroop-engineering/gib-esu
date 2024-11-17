@@ -1,6 +1,6 @@
 from time import time
 
-from service.esu_service import ESUServis
+from services.esu_service import ESUServis
 
 if __name__ == "__main__":
     servis = ESUServis()  # girdi olarak resources/data/esu_list.csv dosyası kullanılır
