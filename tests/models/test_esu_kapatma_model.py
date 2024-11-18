@@ -4,14 +4,14 @@ from typing import List, cast
 import pytest
 from pydantic import ValidationError
 
-from models.esu_kapatma import ESUKapatma, ESUKapatmaBilgisi, ESUKapatmaModel
+from models.api_models import ESUKapatmaModel, ESUSeriNo
 
 
 @pytest.fixture(scope="module")
 def my_model() -> ESUKapatmaModel:
     return ESUKapatmaModel(
         firma_kodu="J000",
-        kapatma_bilgisi=ESUKapatmaBilgisi(
+        kapatma_bilgisi=ESUSeriNo(
             esu_seri_no="123",
         ),
     )
@@ -34,7 +34,7 @@ def set_nested_field(data: dict, keys: list, value: str) -> None:
     "keys, invalid_value",
     [
         (["firma_kodu"], ""),
-        (["kapatma_bilgisi", "esu_seri_no"], "AB"),
+        (["kapatma_bilgisi", "esu_seri_no"], ""),
     ],
 )
 def test_esu_kapatma_model_validation_failure_cases(
@@ -49,13 +49,13 @@ def test_esu_kapatma_model_validation_failure_cases(
     set_nested_field(test_model, keys, invalid_value)
 
     with pytest.raises(ValidationError) as e:
-        ESUKapatma(model=cast(ESUKapatmaModel, test_model))
+        ESUKapatmaModel(**test_model)
     assert e.value.errors()[0].get("msg") is not None
 
 
 def test_esu_kapatma_model_validation_success_case(my_model: ESUKapatmaModel) -> None:
     """Test ESUKapatmaModel successful construction."""
     try:
-        ESUKapatma(model=my_model)
+        ESUKapatmaModel(**my_model.model_dump())
     except Exception as excinfo:
         pytest.fail(f"Unexpected exception raised: {excinfo}")

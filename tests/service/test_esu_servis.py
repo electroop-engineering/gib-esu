@@ -8,23 +8,24 @@ import pytest
 import requests_mock
 from dotenv import dotenv_values
 
-from models.esu_kapatma import ESUKapatma, ESUKapatmaBilgisi, ESUKapatmaModel
-from models.esu_kayit import ESU, ESUSoketTipi, Soket, SoketTipi
-from models.esu_mukellef import (
-    ESUGuncelleme,
+from models.api_models import (
+    ESU,
     ESUGuncellemeBilgisi,
     ESUGuncellemeModel,
-    ESUMukellef,
+    ESUKapatmaModel,
     ESUMukellefBilgisi,
     ESUMukellefModel,
+    ESUSeriNo,
+    ESUTipi,
     Fatura,
     Lokasyon,
     Mukellef,
     MulkiyetSahibi,
     Sertifika,
+    Soket,
+    SoketTipi,
 )
-from models.sabitler import ERROR_KAYIT_BILGILERI_EKSIK, ERROR_MUKELLEF_EKSIK
-from models.servis_modelleri import (
+from models.service_models import (
     Durum,
     ESUTopluGuncellemeSonucu,
     ESUTopluKayitSonucu,
@@ -55,7 +56,7 @@ def test_esu() -> ESU:
         esu_seri_no="123",
         esu_markasi="ABB",
         esu_modeli="DC-Model",
-        esu_soket_tipi=ESUSoketTipi.AC_DC,
+        esu_soket_tipi=ESUTipi.AC_DC,
         esu_soket_sayisi="2",
         esu_soket_detay=[
             Soket(soket_no="Soket1", soket_tip=SoketTipi.AC),
@@ -134,7 +135,7 @@ def sample_csv() -> io.StringIO:
         "esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn,"
         "mukellef_vkn,mukellef_unvan,sertifika_no,sertifika_tarihi,"
         "mulkiyet_sahibi_vkn_tckn,mulkiyet_sahibi_ad_unvan\n123,AC,1,Soket1:AC,"
-        "Vestel,EVC04,034,Üsküdar,2024-08-29,P012024053447,999,AB A.Ş.,,,,"
+        "Vestel,EVC04,034,Üsküdar,2024-08-29,P012024053447,,,,,,"
     )
     return io.StringIO(csv_content)
 
@@ -146,7 +147,7 @@ def sample_csv2() -> io.StringIO:
         "esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn,"
         "mukellef_vkn,mukellef_unvan,sertifika_no,sertifika_tarihi,"
         "mulkiyet_sahibi_vkn_tckn,mulkiyet_sahibi_ad_unvan\n123,AC,1,Soket1:AC,"
-        "Vestel,EVC04,034,Üsküdar,2024-08-19,P012024053446,999,AB A.Ş.,,,,"
+        "Vestel,EVC04,034,Üsküdar,2024-08-19,P012024053446,9876543210,AB A.Ş.,,,,"
     )
     return io.StringIO(csv_content)
 
@@ -158,7 +159,7 @@ def sample_csv3() -> io.StringIO:
         "esu_markasi,esu_modeli,il_kodu,ilce,fatura_tarihi,fatura_ettn,"
         "mukellef_vkn,mukellef_unvan,sertifika_no,sertifika_tarihi,"
         "mulkiyet_sahibi_vkn_tckn,mulkiyet_sahibi_ad_unvan\n123,AC,1,Soket1:AC,"
-        "Vestel,EVC04,034,Üsküdar,2024-01-16,P012024153446,999,AB A.Ş.,,,,"
+        "Vestel,EVC04,034,Üsküdar,2024-01-16,P012024153446,9876543210,AB A.Ş.,,,,"
     )
     return io.StringIO(csv_content)
 
@@ -215,18 +216,16 @@ def test_mukellef_kayit(
     assert resp.sonuc[0].esu_seri_no == test_esu.esu_seri_no
 
     resp = servis.mukellef_kayit(
-        mukellef_bilgileri=ESUMukellef(
-            model=ESUMukellefModel(
-                firma_kodu=servis._firma.firma_kodu,
-                durum_bilgileri=ESUMukellefBilgisi(
-                    esu_seri_no=test_esu.esu_seri_no,
-                    **test_fatura.model_dump(),
-                    **test_mukellef.model_dump(),
-                    **test_lokasyon.model_dump(),
-                    **Sertifika().model_dump(),
-                    **MulkiyetSahibi().model_dump(),
-                ),
-            )
+        mukellef_bilgileri=ESUMukellefModel(
+            firma_kodu=servis._firma.firma_kodu,
+            durum_bilgileri=ESUMukellefBilgisi(
+                esu_seri_no=test_esu.esu_seri_no,
+                **test_fatura.model_dump(),
+                **test_mukellef.model_dump(),
+                **test_lokasyon.model_dump(),
+                **Sertifika().model_dump(),
+                **MulkiyetSahibi().model_dump(),
+            ),
         )
     )
     assert resp.sonuc[0].esu_seri_no == test_esu.esu_seri_no
@@ -238,7 +237,7 @@ def test_mukellef_kayit(
             # mukellef missing mukellef=test_mukellef,
             fatura=test_fatura,
         )
-    assert e.value.args[0] == ERROR_MUKELLEF_EKSIK
+    assert e.value.args[0] == "Mükellef bilgileri eksik"
 
 
 def test_toplu_kayit(
@@ -317,17 +316,15 @@ def test_kayit_guncelle(
     )
 
     resp = servis.kayit_guncelle(
-        kayit_bilgileri=ESUGuncelleme(
-            model=ESUGuncellemeModel(
-                firma_kodu=servis._firma.firma_kodu,
-                guncelleme_istek_bilgileri=ESUGuncellemeBilgisi(
-                    **test_lokasyon.model_dump(),
-                    **test_fatura.model_dump(),
-                    esu_seri_no=test_esu.esu_seri_no,
-                    **Sertifika().model_dump(),
-                    **MulkiyetSahibi().model_dump(),
-                ),
-            )
+        kayit_bilgileri=ESUGuncellemeModel(
+            firma_kodu=servis._firma.firma_kodu,
+            guncelleme_istek_bilgileri=ESUGuncellemeBilgisi(
+                **test_lokasyon.model_dump(),
+                **test_fatura.model_dump(),
+                esu_seri_no=test_esu.esu_seri_no,
+                **Sertifika().model_dump(),
+                **MulkiyetSahibi().model_dump(),
+            ),
         )
     )
     assert resp.sonuc[0].esu_seri_no == test_esu.esu_seri_no
@@ -338,7 +335,7 @@ def test_kayit_guncelle(
             lokasyon=test_lokasyon,
             fatura=test_fatura,
         )
-    assert e.value.args[0] == ERROR_KAYIT_BILGILERI_EKSIK
+    assert e.value.args[0] == "Kayıt bilgileri eksik"
 
 
 def test_toplu_guncelle(
@@ -411,16 +408,14 @@ def test_cihaz_kapatma(
     )
 
     resp = servis.cihaz_kapatma(
-        cihaz_bilgisi=ESUKapatma(
-            model=ESUKapatmaModel(
-                firma_kodu=servis._firma.firma_kodu,
-                kapatma_bilgisi=ESUKapatmaBilgisi(
-                    esu_seri_no=test_esu.esu_seri_no,
-                ),
-            )
+        cihaz_bilgisi=ESUKapatmaModel(
+            firma_kodu=servis._firma.firma_kodu,
+            kapatma_bilgisi=ESUSeriNo(
+                esu_seri_no=test_esu.esu_seri_no,
+            ),
         )
     )
     assert resp.sonuc[0].esu_seri_no == test_esu.esu_seri_no
 
-    resp = servis.cihaz_kapatma(esu_seri_no=test_esu.esu_seri_no)
+    resp = servis.cihaz_kapatma(esu_seri_no=ESUSeriNo(**test_esu.model_dump()))
     assert resp.sonuc[0].esu_seri_no == test_esu.esu_seri_no

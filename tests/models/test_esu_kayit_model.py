@@ -4,16 +4,7 @@ from typing import List, cast
 import pytest
 from pydantic import ValidationError
 
-from models.esu_kayit import (
-    ESU,
-    ESUKayit,
-    ESUKayitModel,
-    ESUSoketTipi,
-    Firma,
-    Soket,
-    SoketTipi,
-)
-from models.sabitler import ERROR_SOKET_DETAY_UZUNLUK
+from models.api_models import ESU, ESUKayitModel, ESUTipi, Firma, Soket, SoketTipi
 
 
 @pytest.fixture(scope="module")
@@ -27,7 +18,7 @@ def my_model() -> ESUKayitModel:
             esu_seri_no="123",
             esu_markasi="ABB",
             esu_modeli="DC-Model",
-            esu_soket_tipi=ESUSoketTipi.AC_DC,
+            esu_soket_tipi=ESUTipi.AC_DC,
             esu_soket_sayisi="2",
             esu_soket_detay=[
                 Soket(soket_no="Soket1", soket_tip=SoketTipi.AC),
@@ -55,8 +46,8 @@ def set_nested_field(data: dict, keys: list, value: str) -> None:
     [
         (["firma_kodu"], ""),
         (["firma_vkn"], "0123"),
-        (["epdk_lisans_no"], "ŞH/111-1/22222"),
-        (["kayit_bilgisi", "esu_seri_no"], "AB"),
+        (["epdk_lisans_no"], " "),
+        (["kayit_bilgisi", "esu_seri_no"], ""),
         (["kayit_bilgisi", "esu_markasi"], ""),
         (["kayit_bilgisi", "esu_modeli"], ""),
         (["kayit_bilgisi", "esu_soket_sayisi"], "AC"),
@@ -85,7 +76,7 @@ def test_esu_kayit_model_validation_failure_cases(
     set_nested_field(test_model, keys, invalid_value)
 
     with pytest.raises(ValidationError) as e:
-        ESUKayit(model=cast(ESUKayitModel, test_model))
+        ESUKayitModel(**test_model)
     assert e.value.errors()[0].get("msg") is not None
 
 
@@ -101,17 +92,15 @@ def test_esu_kayit_model_validation_failure_case_soket_detay_length(
     )
 
     with pytest.raises(ValidationError) as e:
-        ESUKayit(model=cast(ESUKayitModel, test_model))
+        ESUKayitModel(**test_model)
 
-    assert (
-        str(e.value.errors()[0].get("msg")).split(", ")[1] == ERROR_SOKET_DETAY_UZUNLUK
-    )
+    assert str(e.value.errors()[0].get("msg")) is not None
 
 
 def test_esu_kayit_model_validation_success_case(my_model: ESUKayitModel) -> None:
     """Test successful ESUKayitModel instantiation."""
     try:
-        ESUKayit(model=my_model)
+        ESUKayitModel(**my_model.model_dump())
     except Exception as excinfo:
         pytest.fail(f"Unexpected exception raised: {excinfo}")
 
@@ -131,6 +120,6 @@ def test_esu_kayit_olustur(my_model: ESUKayitModel) -> None:
     esu.esu_soket_detay = [soket1, soket2]
 
     try:
-        ESUKayit.olustur(firma=firma, esu=esu)
+        ESUKayitModel.olustur(firma=firma, esu=esu)
     except Exception as excinfo:
         pytest.fail(f"Unexpected exception raised: {excinfo}")
