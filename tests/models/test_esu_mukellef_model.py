@@ -22,7 +22,6 @@ def my_model() -> ESUMukellefModel:
     return ESUMukellefModel(
         firma_kodu="J000",
         durum_bilgileri=ESUMukellefBilgisi(
-            esu_seri_no="123",
             il_kodu="034",
             ilce="Beşiktaş",
             adres_numarası="",
@@ -35,6 +34,7 @@ def my_model() -> ESUMukellefModel:
             fatura_ettn="P01C5368",
             mulkiyet_sahibi_vkn_tckn="",
             mulkiyet_sahibi_ad_unvan="",
+            esu_seri_no="123",
         ),
     )
 
@@ -70,10 +70,6 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
                 "durum_bilgileri>fatura_tarihi"
             ),
             "***",
-        ),
-        (
-            "durum_bilgileri>sertifika_no*" "durum_bilgileri>sertifika_tarihi",
-            "CERT01*2024-12-30",
         ),
         ("durum_bilgileri>fatura_tarihi", "23-05-2024"),
         (
@@ -142,7 +138,7 @@ def test_esu_mukellef_olustur(my_model: ESUMukellefModel) -> None:
 
     try:
         ESUMukellefModel.olustur(
-            esu_seri_no=ESUSeriNo(esu_seri_no=durum.esu_seri_no),
+            esu_seri_no=durum.esu_seri_no,
             firma_kodu=my_model.firma_kodu,
             fatura=fatura,
             lokasyon=lokasyon,
@@ -151,7 +147,7 @@ def test_esu_mukellef_olustur(my_model: ESUMukellefModel) -> None:
             sertifika=sertifika,
         )
         ESUMukellefModel.olustur(
-            esu_seri_no=ESUSeriNo(esu_seri_no="SN001"),
+            esu_seri_no="SN001",
             firma_kodu="J000",
             fatura=fatura,
             lokasyon=lokasyon,

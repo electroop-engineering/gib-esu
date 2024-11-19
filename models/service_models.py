@@ -23,8 +23,8 @@ class Durum(str, Enum):
 class EvetVeyaHayir(str, Enum):
     """Enum for boolean config parameters."""
 
-    EVET = "0"
-    HAYIR = "1"
+    EVET = "1"
+    HAYIR = "0"
 
 
 # api response model

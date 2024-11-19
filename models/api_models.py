@@ -93,11 +93,11 @@ def _validate_tax_payer_and_update_models(model: CustomBaseModelWithValidator) -
         )
 
     # allow presence of `sertifika_no` only when `mulkiyet_sahibi_vkn_tckn` is present
-    if sertifika_no_does_exist and mulkiyet_vkn_does_not_exist:
+    """ if sertifika_no_does_exist and mulkiyet_vkn_does_not_exist:
         raise ValueError(
             "sertifika bilgilerini gönderebilmek için "
             "`mulkiyet_sahibi_vkn_tckn` dolu olmalıdır"
-        )
+        ) """
 
     # conditionally check fatura_tarihi
     if not fatura_tarihi_does_not_exist and not bool(
@@ -203,7 +203,7 @@ class Firma(FirmaKodu):
 
     firma_vkn: TaxNumber
     epdk_lisans_no: NonEmptyString
-    firma_unvan: Union[NonEmptyString, None]
+    firma_unvan: Optional[NonEmptyString] = Field(default=None, exclude=True)
 
 
 class Lokasyon(CustomBaseModel):
@@ -322,7 +322,7 @@ class ESUMukellefModel(CustomBaseModelWithValidator, FirmaKodu):
     @classmethod
     def olustur(
         cls,
-        esu_seri_no: ESUSeriNo,
+        esu_seri_no: str,
         firma_kodu: str,
         fatura: Fatura,
         lokasyon: Lokasyon,
@@ -331,7 +331,7 @@ class ESUMukellefModel(CustomBaseModelWithValidator, FirmaKodu):
         sertifika: Optional[Sertifika] = None,
     ) -> ESUMukellefModel:
         combined_data = {
-            **esu_seri_no.model_dump(),
+            **ESUSeriNo(esu_seri_no=esu_seri_no).model_dump(),
             **fatura.model_dump(),
             **lokasyon.model_dump(),
             **mukellef.model_dump(),

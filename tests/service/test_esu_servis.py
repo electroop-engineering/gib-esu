@@ -407,6 +407,10 @@ def test_cihaz_kapatma(
         json=test_yanit.model_dump(),
     )
 
+    with pytest.raises(ValueError) as e:
+        resp = servis.cihaz_kapatma()
+    assert "geçersiz" in e.value.args[0]
+
     resp = servis.cihaz_kapatma(
         cihaz_bilgisi=ESUKapatmaModel(
             firma_kodu=servis._firma.firma_kodu,
@@ -417,5 +421,5 @@ def test_cihaz_kapatma(
     )
     assert resp.sonuc[0].esu_seri_no == test_esu.esu_seri_no
 
-    resp = servis.cihaz_kapatma(esu_seri_no=ESUSeriNo(**test_esu.model_dump()))
+    resp = servis.cihaz_kapatma(esu_seri_no=test_esu.esu_seri_no)
     assert resp.sonuc[0].esu_seri_no == test_esu.esu_seri_no
