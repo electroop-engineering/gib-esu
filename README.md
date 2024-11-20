@@ -1,5 +1,5 @@
 ## GİB EŞÜ EKS Servisi
-<details>
+<details open>
 
 <summary>Cihaz Kayıt</summary>
 
@@ -185,5 +185,6 @@ print(yanit.sonuc[0].esu_seri_no)  # "7001324500027"
 <br>
 
  [Dokümantasyon](doc.md)
+<br>
 <br>
 &copy;Electroop, 2024
