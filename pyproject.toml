@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gib-esu"
+version = "1.0.0"
+description = "GİB EŞÜ EKS servis istemcisi - Electroop"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE.md" }
+authors = [
+    { name = "Özcan Türkmen", email = "ozcan@electroop.io" },
+]
+maintainers = [
+    { name = "Özcan Türkmen", email = "ozcan@electroop.io" },
+]
+keywords = ["GİB EŞÜ EKS", "Elektrikli şarj üniteleri", "şarj ağı işletmecileri"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas>=2.2.2,<3.0.0",
+    "requests>=2.32.3,<3.0.0",
+    "pydantic>=2.9.2,<3.0.0",
+    "python-dotenv>=1.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "black",
+    "flake8",
+    "mypy",
+    "pre-commit"
+]
+
+[project.urls]
+homepage = "https://github.com/electroop-engineering/gib-esu"
+repository = "https://github.com/electroop-engineering/gib-esu"
+documentation = "https://github.com/electroop-engineering/gib-esu/blob/main/doc.md"
+
+[tool.setuptools]
+
+[tool.setuptools.packages.find]
+exclude = ["tests*"]
