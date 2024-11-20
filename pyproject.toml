@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gib-esu"
-version = "1.0.0"
+dynamic = ["version"]
 description = "GİB EŞÜ EKS servis istemcisi - Electroop"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -43,6 +43,9 @@ repository = "https://github.com/electroop-engineering/gib-esu"
 documentation = "https://github.com/electroop-engineering/gib-esu/blob/main/doc.md"
 
 [tool.setuptools]
+
+[tool.setuptools.dynamic]
+version = {attr = "gib_esu.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["gib_esu"]
