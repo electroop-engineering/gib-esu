@@ -8,7 +8,7 @@ setup(
     author="Electroop Engineering",
     author_email="dev@electroop.io",
     url="https://github.com/electroop-engineering/gib-esu",
-    packages=find_packages(),  # Automatically finds package directories
+    packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
