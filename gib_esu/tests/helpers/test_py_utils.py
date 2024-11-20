@@ -2,7 +2,7 @@ import io
 
 import pytest
 
-from helpers.py_utils import PyUtils
+from gib_esu.helpers.py_utils import PyUtils
 
 
 @pytest.fixture

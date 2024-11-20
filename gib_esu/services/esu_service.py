@@ -11,8 +11,8 @@ import requests
 from dotenv import dotenv_values
 from pydantic import HttpUrl
 
-from helpers.py_utils import PyUtils
-from models.api_models import (
+from gib_esu.helpers.py_utils import PyUtils
+from gib_esu.models.api_models import (
     ESU,
     ESUGuncellemeModel,
     ESUKapatmaModel,
@@ -27,7 +27,7 @@ from models.api_models import (
     Sertifika,
     Soket,
 )
-from models.service_models import (
+from gib_esu.models.service_models import (
     APIParametreleri,
     ESUServisKonfigurasyonu,
     ESUTopluGuncellemeSonucu,

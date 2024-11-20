@@ -13,7 +13,7 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from models.base_model import CustomBaseModel
+from gib_esu.models.base_model import CustomBaseModel
 
 # regex patterns
 

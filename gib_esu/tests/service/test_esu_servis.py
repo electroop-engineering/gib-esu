@@ -8,7 +8,7 @@ import pytest
 import requests_mock
 from dotenv import dotenv_values
 
-from models.api_models import (
+from gib_esu.models.api_models import (
     ESU,
     ESUGuncellemeBilgisi,
     ESUGuncellemeModel,
@@ -25,7 +25,7 @@ from models.api_models import (
     Soket,
     SoketTipi,
 )
-from models.service_models import (
+from gib_esu.models.service_models import (
     Durum,
     ESUTopluGuncellemeSonucu,
     ESUTopluKayitSonucu,
@@ -34,7 +34,7 @@ from models.service_models import (
     TopluKayitSonuc,
     Yanit,
 )
-from services.esu_service import ESUServis
+from gib_esu.services.esu_service import ESUServis
 
 
 @pytest.fixture
@@ -288,7 +288,7 @@ def test_toplu_kayit(
     mock_file.assert_called_once_with(dummy_output_path, "w")
     mock_file().write.assert_called_once_with("mocked_content")
 
-    with patch("services.esu_service.ESUServis._dosyaya_yaz") as mock_write:
+    with patch("gib_esu.services.esu_service.ESUServis._dosyaya_yaz") as mock_write:
         resp = servis.toplu_kayit(
             csv_string=sample_csv3, dosyaya_yaz=True, cikti_dosya_yolu=dummy_output_path
         )
@@ -382,7 +382,7 @@ def test_toplu_guncelle(
     mock_file.assert_called_once_with(dummy_output_path, "w")
     mock_file().write.assert_called_once_with("mocked_content")
 
-    with patch("services.esu_service.ESUServis._dosyaya_yaz") as mock_write:
+    with patch("gib_esu.services.esu_service.ESUServis._dosyaya_yaz") as mock_write:
         resp = servis.toplu_guncelle(
             csv_string=sample_csv3, dosyaya_yaz=True, cikti_dosya_yolu=dummy_output_path
         )

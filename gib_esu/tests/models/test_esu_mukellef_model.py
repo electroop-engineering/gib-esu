@@ -4,7 +4,7 @@ from typing import List, cast
 import pytest
 from pydantic import ValidationError
 
-from models.api_models import (
+from gib_esu.models.api_models import (
     ESUGuncellemeModel,
     ESUMukellefBilgisi,
     ESUMukellefModel,

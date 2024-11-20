@@ -3,8 +3,13 @@ from typing import Annotated, List, Optional
 
 from pydantic import Field, HttpUrl, PositiveInt
 
-from models.api_models import ESUSeriNo, NonEmptyString, TaxNumber, TaxNumberOrEmpty
-from models.base_model import CustomBaseModel
+from gib_esu.models.api_models import (
+    ESUSeriNo,
+    NonEmptyString,
+    TaxNumber,
+    TaxNumberOrEmpty,
+)
+from gib_esu.models.base_model import CustomBaseModel
 
 # regex patterns
 

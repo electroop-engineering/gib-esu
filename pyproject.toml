@@ -45,4 +45,5 @@ documentation = "https://github.com/electroop-engineering/gib-esu/blob/main/doc.
 [tool.setuptools]
 
 [tool.setuptools.packages.find]
+where = ["gib_esu"]
 exclude = ["tests*"]
