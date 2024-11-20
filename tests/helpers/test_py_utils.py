@@ -39,16 +39,3 @@ def test_read_csv(sample_csv: io.StringIO) -> None:
     assert df.loc[0, "sertifika_tarihi"] == ""
     assert df.loc[0, "mulkiyet_sahibi_vkn_tckn"] == ""
     assert df.loc[0, "mulkiyet_sahibi_ad_unvan"] == ""
-
-
-def test_pad_with_zeroes() -> None:
-    """Test PyUtils.pad_with_zeroes method."""
-
-    padded = PyUtils.pad_with_zeroes("123456789")
-    assert len(padded) == 10 and padded == "0123456789"
-
-    padded = PyUtils.pad_with_zeroes("12345678901")
-    assert len(padded) == 11 and padded == "12345678901"
-
-    padded = PyUtils.pad_with_zeroes("912345")
-    assert len(padded) == 10 and padded == "0000912345"

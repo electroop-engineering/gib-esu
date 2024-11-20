@@ -271,7 +271,7 @@ def test_toplu_kayit(
         == test_yanit.sonuc[0].esu_seri_no
     )
 
-    resp = servis.toplu_kayit(csv_string=sample_csv2, paralel=True)
+    resp = servis.toplu_kayit(csv_string=sample_csv2, paralel_calistir=True)
     assert TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
     assert (
         TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no
@@ -365,7 +365,7 @@ def test_toplu_guncelle(
         == test_yanit.sonuc[0].esu_seri_no
     )
 
-    resp = servis.toplu_guncelle(csv_string=sample_csv2, paralel=True)
+    resp = servis.toplu_guncelle(csv_string=sample_csv2, paralel_calistir=True)
     assert TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
     assert (
         TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no

@@ -39,7 +39,7 @@ from services.esu_service import ESUServis
 
 servis = ESUServis()  # konfigürasyonda .env dosyası kullanılır
 
-esu_seri_no = "7001324500027"
+seri_no = "7001324500027"
 
 lokasyon = Lokasyon(
     il_kodu="034",
@@ -55,7 +55,7 @@ mukellef = Mukellef(
 )
 
 yanit = servis.mukellef_kayit(
-    esu="7001324500027", lokasyon=lokasyon, fatura=fatura, mukellef=mukellef
+    esu=seri_no, lokasyon=lokasyon, fatura=fatura, mukellef=mukellef
 )
 
 print(yanit.durum)  # "success"
@@ -75,15 +75,15 @@ from time import time
 
 from services.esu_service import ESUServis
 
-servis = ESUServis()
+servis = ESUServis()  # konfigürasyonda .env dosyası kullanılır
 
 baslangic = time()
 
 sonuc = servis.toplu_kayit(
-    giris_dosya_yolu="input.csv",  # verilmezse "resources/data/esu_list.csv" varsayılır
-    dosyaya_yaz=True,  # varsayılan değer False
-    cikti_dosya_yolu="output.json",  # verilmezse "gonderim_raporu.json" kullanılır
-    paralel=True,  # varsayılan değer False
+    giris_dosya_yolu="input.csv",  # varsayılan "envanter.csv"
+    dosyaya_yaz=True,  # varsayılan False
+    cikti_dosya_yolu="output.json",  # varsayılan "gonderim_raporu.json"
+    paralel_calistir=True,  # varsayılan False
 )
 
 bitis = time()
@@ -105,7 +105,7 @@ from services.esu_service import ESUServis
 
 servis = ESUServis()  # konfigürasyonda .env dosyası kullanılır
 
-esu_seri_no = "7001324500027"
+seri_no = "7001324500027"
 
 lokasyon = Lokasyon(
     il_kodu="034",
@@ -119,7 +119,7 @@ fatura = Fatura(fatura_tarihi="2024-11-29", fatura_ettn="G212024000000049")
 sertifika = Sertifika(sertifika_no="SE2024013000012", sertifika_tarihi="2024-01-30")
 
 yanit = servis.kayit_guncelle(
-    esu_seri_no == "7001324500027",
+    esu_seri_no=seri_no,
     lokasyon=lokasyon,
     fatura=fatura,
     sertifika=sertifika,
@@ -142,15 +142,15 @@ from time import time
 
 from services.esu_service import ESUServis
 
-servis = ESUServis()
+servis = ESUServis()  # konfigürasyonda .env dosyası kullanılır
 
 baslangic = time()
 
 sonuc = servis.toplu_guncelle(
-    giris_dosya_yolu="input.csv",  # verilmezse "resources/data/esu_list.csv" varsayılır
-    dosyaya_yaz=True,  # varsayılan değer False
-    cikti_dosya_yolu="output.json",  # verilmezse "gonderim_raporu.json" kullanılır
-    paralel=True,  # varsayılan değer False
+    giris_dosya_yolu="input.csv",  # varsayılan "envanter.csv"
+    dosyaya_yaz=True,  # varsayılan False
+    cikti_dosya_yolu="output.json",  # varsayılan "gonderim_raporu.json"
+    paralel_calistir=True,  # varsayılan False
 )
 
 bitis = time()
@@ -171,9 +171,9 @@ from services.esu_service import ESUServis
 
 servis = ESUServis()  # konfigürasyonda .env dosyası kullanılır
 
-esu_seri_no = "7001324500027"
+seri_no = "7001324500027"
 
-yanit = servis.cihaz_kapatma(esu_seri_no=esu_seri_no)
+yanit = servis.cihaz_kapatma(esu_seri_no=seri_no)
 
 print(yanit.durum)  # "success"
 print(yanit.sonuc[0].mesaj)  # "Basarili"
@@ -182,5 +182,8 @@ print(yanit.sonuc[0].esu_seri_no)  # "7001324500027"
 ```
 
 </details>
-  <br>
+<br>
+
+ [Dokümantasyon](doc.md)
+<br>
 &copy;Electroop, 2024

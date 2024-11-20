@@ -26,7 +26,17 @@ RegEx__Tarih = r"^\d{4}-\d{2}-\d{2}$"  # YYYY-MM-DD
 
 # validators
 def _validate_tax_number(tax_nr: str) -> str:
-    """Validates a given tax number."""
+    """Validates a given tax number.
+
+    Args:
+        tax_nr (str): Tax number to validate
+
+    Raises:
+        ValueError: In case tax_nr does not conform to tax number scheme
+
+    Returns:
+        str: Validated tax_nr
+    """
     v_str = tax_nr.strip()
     if not v_str or re.fullmatch(RegEx__Firma_VKN, v_str):
         return v_str
@@ -277,6 +287,15 @@ class ESUKayitModel(Firma):
 
     @classmethod
     def olustur(cls, firma: Firma, esu: ESU) -> ESUKayitModel:
+        """Constructs a ESUKayitModel from given `esu` and `firma` arguments.
+
+        Args:
+            firma (Firma): Company information
+            esu (ESU): Charge point information
+
+        Returns:
+            ESUKayitModel: Constructed model instance
+        """
         combined_data = {**firma.__dict__, "kayit_bilgisi": esu}
         return ESUKayitModel(**combined_data)
 
@@ -330,6 +349,21 @@ class ESUMukellefModel(CustomBaseModelWithValidator, FirmaKodu):
         mulkiyet_sahibi: Optional[MulkiyetSahibi] = None,
         sertifika: Optional[Sertifika] = None,
     ) -> ESUMukellefModel:
+        """Constructs a ESUMukellefModel from given arguments.
+
+        Args:
+            esu_seri_no (str): Charge point serial number
+            firma_kodu (str): Company code
+            fatura (Fatura): Invoice information
+            lokasyon (Lokasyon): Location information
+            mukellef (Mukellef): Tax payer information
+            mulkiyet_sahibi (Optional[MulkiyetSahibi], optional):
+            Ownership information. Defaults to None.
+            sertifika (Optional[Sertifika], optional): Certificate. Defaults to None.
+
+        Returns:
+            ESUMukellefModel: Constructed model instance
+        """
         combined_data = {
             **ESUSeriNo(esu_seri_no=esu_seri_no).model_dump(),
             **fatura.model_dump(),
@@ -360,6 +394,20 @@ class ESUGuncellemeModel(CustomBaseModelWithValidator, FirmaKodu):
         mulkiyet_sahibi: Optional[MulkiyetSahibi] = None,
         sertifika: Optional[Sertifika] = None,
     ) -> ESUGuncellemeModel:
+        """Constructs a ESUGuncellemeModel from given arguments.
+
+        Args:
+            esu_seri_no (str): Charge point serial number
+            firma_kodu (str): Company code
+            fatura (Fatura): Invoice information
+            lokasyon (Lokasyon): Location information
+            mulkiyet_sahibi (Optional[MulkiyetSahibi], optional):
+            Ownership information. Defaults to None.
+            sertifika (Optional[Sertifika], optional): Certificate. Defaults to None.
+
+        Returns:
+            ESUGuncellemeModel: Constructed model instance
+        """
         combined_data = {
             **esu_seri_no.model_dump(),
             **fatura.model_dump(),
