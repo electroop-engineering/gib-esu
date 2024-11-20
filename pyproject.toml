@@ -43,9 +43,7 @@ repository = "https://github.com/electroop-engineering/gib-esu"
 documentation = "https://github.com/electroop-engineering/gib-esu/blob/main/doc.md"
 
 [tool.setuptools]
+packages = ["gib_esu"]
 
 [tool.setuptools.dynamic]
 version = {attr = "gib_esu.__version__"}
-
-[tool.setuptools.packages.find]
-exclude = ["tests*"]
