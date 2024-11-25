@@ -1,1 +1,8 @@
-*.xslt linguist-language=Python
+# Mark all Python files as linguist-detectable
+*.py linguist-detectable=true
+
+# Mark other files as linguist-generated
+*.html linguist-generated=true
+*.css linguist-generated=true
+*.js linguist-generated=true
+*.sh linguist-generated=true
