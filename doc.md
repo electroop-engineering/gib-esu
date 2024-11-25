@@ -1,716 +1,749 @@
-# <a name='codedocumentation'></a>Code documentation
+<a id="response_models"></a>
 
-* [models/base\_model](#modelsbasemodel)
+# response\_models
 
+<a id="response_models.Durum"></a>
 
-	* [CustomBaseModel](#custombasemodel)
+## Durum Objects
 
+```python
+class Durum(str, Enum)
+```
 
-* [models/service\_models](#modelsservicemodels)
-
-
-	* [API](#api)
-
-
-	* [APIParametreleri](#apiparametreleri)
-
-
-	* [Durum](#durum)
-
-
-	* [ESUKayitSonucu](#esukayitsonucu)
-
-
-	* [ESUServisKonfigurasyonu](#esuserviskonfigurasyonu)
-
-
-	* [ESUTopluGuncellemeSonucu](#esutopluguncellemesonucu)
-
-
-	* [ESUTopluKayitSonucu](#esutoplukayitsonucu)
-
-
-	* [EvetVeyaHayir](#evetveyahayir)
-
-
-	* [MukellefKayitSonucu](#mukellefkayitsonucu)
-
-
-	* [Sonuc](#sonuc)
-
-
-	* [TopluGuncellemeSonuc](#topluguncellemesonuc)
-
-
-	* [TopluKayitSonuc](#toplukayitsonuc)
-
-
-	* [Yanit](#yanit)
-
-
-* [models/api\_models](#modelsapimodels)
-
-
-	* [CustomBaseModelWithValidator](#custombasemodelwithvalidator)
-
-
-		* [CustomBaseModelWithValidator.\_enforce\_model\_constraints](#custombasemodelwithvalidatorenforcemodelconstraints)
-
-
-	* [ESU](#esu)
-
-
-	* [ESUGuncellemeBilgisi](#esuguncellemebilgisi)
-
-
-	* [ESUGuncellemeModel](#esuguncellememodel)
-
-
-		* [CustomBaseModelWithValidator.\_enforce\_model\_constraints](#custombasemodelwithvalidatorenforcemodelconstraints)
-
-
-	* [ESUKapatmaModel](#esukapatmamodel)
-
-
-	* [ESUKayitModel](#esukayitmodel)
-
-
-		* [ESUKayitModel.\_enforce\_model\_constraints](#esukayitmodelenforcemodelconstraints)
-
-
-	* [ESUMukellefBilgisi](#esumukellefbilgisi)
-
-
-	* [ESUMukellefModel](#esumukellefmodel)
-
-
-		* [CustomBaseModelWithValidator.\_enforce\_model\_constraints](#custombasemodelwithvalidatorenforcemodelconstraints)
-
-
-	* [ESUSeriNo](#esuserino)
-
-
-	* [ESUTipi](#esutipi)
-
-
-	* [Fatura](#fatura)
-
-
-	* [Firma](#firma)
-
-
-	* [FirmaKodu](#firmakodu)
-
-
-	* [Lokasyon](#lokasyon)
-
-
-	* [Mukellef](#mukellef)
-
-
-	* [MulkiyetSahibi](#mulkiyetsahibi)
-
-
-	* [Sertifika](#sertifika)
-
-
-	* [Soket](#soket)
-
-
-	* [SoketTipi](#sokettipi)
-
-
-	* [\_validate\_tax\_number](#validatetaxnumber)
-
-
-	* [\_validate\_tax\_payer\_and\_update\_models](#validatetaxpayerandupdatemodels)
-
-
-* [helpers/py\_utils](#helperspyutils)
-
-
-	* [PyUtils](#pyutils)
-
-
-* [services/esu\_service](#servicesesuservice)
-
-
-	* [ESUServis](#esuservis)
-
-
-		* [ESUServis.\_\_init\_\_](#esuservisinit)
-
-
-		* [ESUServis.\_api\_isteği](#esuservisapiisteği)
-
-
-		* [ESUServis.\_dosyaya\_yaz](#esuservisdosyayayaz)
-
-
-		* [ESUServis.\_esu\_bilgisi\_hazirla](#esuservisesubilgisihazirla)
-
-
-		* [ESUServis.\_guncelleme\_kaydi\_isle](#esuservisguncellemekaydiisle)
-
-
-		* [ESUServis.\_kayit\_isle](#esuserviskayitisle)
-
-
-		* [ESUServis.\_mukellef\_bilgisi\_hazirla](#esuservismukellefbilgisihazirla)
-
-
-		* [ESUServis.cihaz\_kapatma](#esuserviscihazkapatma)
-
-
-		* [ESUServis.cihaz\_kayit](#esuserviscihazkayit)
-
-
-		* [ESUServis.kayit\_guncelle](#esuserviskayitguncelle)
-
-
-		* [ESUServis.mukellef\_kayit](#esuservismukellefkayit)
-
-
-		* [ESUServis.toplu\_guncelle](#esuservistopluguncelle)
-
-
-		* [ESUServis.toplu\_kayit](#esuservistoplukayit)
-
-## <a name='modelsbasemodel'></a>models/base\_model
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-### <a name='classes'></a>Classes
-
-* [CustomBaseModel](#custombasemodel)
-
-#### <a name='custombasemodel'></a>CustomBaseModel
-Custom base model that ignores extra fields.
-## <a name='modelsservicemodels'></a>models/service\_models
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-### <a name='classes'></a>Classes
-
-* [API](#api)
-
-* [APIParametreleri](#apiparametreleri)
-
-* [Durum](#durum)
-
-* [ESUKayitSonucu](#esukayitsonucu)
-
-* [ESUServisKonfigurasyonu](#esuserviskonfigurasyonu)
-
-* [ESUTopluGuncellemeSonucu](#esutopluguncellemesonucu)
-
-* [ESUTopluKayitSonucu](#esutoplukayitsonucu)
-
-* [EvetVeyaHayir](#evetveyahayir)
-
-* [MukellefKayitSonucu](#mukellefkayitsonucu)
-
-* [Sonuc](#sonuc)
-
-* [TopluGuncellemeSonuc](#topluguncellemesonuc)
-
-* [TopluKayitSonuc](#toplukayitsonuc)
-
-* [Yanit](#yanit)
-
-#### <a name='api'></a>API
-Service model for API URLs.
-#### <a name='apiparametreleri'></a>APIParametreleri
-Service model for API parameters.
-#### <a name='durum'></a>Durum
 Enum for API response status codes.
-#### <a name='esukayitsonucu'></a>ESUKayitSonucu
-Charge point registration output model.
-#### <a name='esuserviskonfigurasyonu'></a>ESUServisKonfigurasyonu
-Service configuration model.
-#### <a name='esutopluguncellemesonucu'></a>ESUTopluGuncellemeSonucu
-Batch update output model for single charge point.
-#### <a name='esutoplukayitsonucu'></a>ESUTopluKayitSonucu
-Batch registration output model for single charge point.
-#### <a name='evetveyahayir'></a>EvetVeyaHayir
-Enum for boolean config parameters.
-#### <a name='mukellefkayitsonucu'></a>MukellefKayitSonucu
-Charge point tax payer registration model.
-#### <a name='sonuc'></a>Sonuc
+
+<a id="response_models.Sonuc"></a>
+
+## Sonuc Objects
+
+```python
+class Sonuc(CustomBaseModel)
+```
+
 Api result model.
-#### <a name='topluguncellemesonuc'></a>TopluGuncellemeSonuc
-Charge point batch update output model.
-#### <a name='toplukayitsonuc'></a>TopluKayitSonuc
-Charge point batch registration output model.
-#### <a name='yanit'></a>Yanit
+
+<a id="response_models.Yanit"></a>
+
+## Yanit Objects
+
+```python
+class Yanit(CustomBaseModel)
+```
+
 Api response model.
-## <a name='modelsapimodels'></a>models/api\_models
-&uparrow; Back to [code documentation index](#codedocumentation)
 
+<a id="__init__"></a>
 
-### <a name='dependencies'></a>Dependencies
-* re
+# \_\_init\_\_
 
-### <a name='classes'></a>Classes
+<a id="request_models"></a>
 
-* [CustomBaseModelWithValidator](#custombasemodelwithvalidator)
+# request\_models
 
-* [ESU](#esu)
+<a id="request_models.RegEx__Tarih"></a>
 
-* [ESUGuncellemeBilgisi](#esuguncellemebilgisi)
+#### RegEx\_\_Tarih
 
-* [ESUGuncellemeModel](#esuguncellememodel)
+YYYY-MM-DD
 
-* [ESUKapatmaModel](#esukapatmamodel)
+<a id="request_models.T"></a>
 
-* [ESUKayitModel](#esukayitmodel)
+#### T
 
-* [ESUMukellefBilgisi](#esumukellefbilgisi)
+Type definition of a non-empty string.
 
-* [ESUMukellefModel](#esumukellefmodel)
+<a id="request_models.NonEmptyString"></a>
 
-* [ESUSeriNo](#esuserino)
+#### NonEmptyString
 
-* [ESUTipi](#esutipi)
+Type definition of a non-empty list.
 
-* [Fatura](#fatura)
+<a id="request_models.NonEmptyList"></a>
 
-* [Firma](#firma)
+#### NonEmptyList
 
-* [FirmaKodu](#firmakodu)
+Type definition for required tax numbers.
 
-* [Lokasyon](#lokasyon)
+<a id="request_models.TaxNumber"></a>
 
-* [Mukellef](#mukellef)
+#### TaxNumber
 
-* [MulkiyetSahibi](#mulkiyetsahibi)
+Type definition for optional tax numbers.
 
-* [Sertifika](#sertifika)
+<a id="request_models.TaxNumberOrEmpty"></a>
 
-* [Soket](#soket)
+#### TaxNumberOrEmpty
 
-* [SoketTipi](#sokettipi)
+Type definition for city code.
 
-#### <a name='custombasemodelwithvalidator'></a>CustomBaseModelWithValidator
-Custom base model with a predefined model validator function.
-##### <a name='functions'></a>Functions
+<a id="request_models.SoketTipi"></a>
 
-* [CustomBaseModelWithValidator.\_enforce\_model\_constraints](#custombasemodelwithvalidatorenforcemodelconstraints)
+## SoketTipi Objects
 
-###### <a name='custombasemodelwithvalidatorenforcemodelconstraints'></a>CustomBaseModelWithValidator.\_enforce\_model\_constraints
-&uparrow; Back to [code documentation index](#codedocumentation)
+```python
+class SoketTipi(str, Enum)
+```
 
-&uparrow; Back to [module index](#models/api_models)
-
-&uparrow; Back to [class index](#CustomBaseModelWithValidator)
-
-Validates the model according to the model constraints.
-#### <a name='esu'></a>ESU
-Charge point model.
-#### <a name='esuguncellemebilgisi'></a>ESUGuncellemeBilgisi
-Intermediary model that encapsulates charge point and ownership information.
-#### <a name='esuguncellememodel'></a>ESUGuncellemeModel
-Charge point update request model.
-##### <a name='functions'></a>Functions
-
-* [CustomBaseModelWithValidator.\_enforce\_model\_constraints](#custombasemodelwithvalidatorenforcemodelconstraints)
-
-###### <a name='custombasemodelwithvalidatorenforcemodelconstraints'></a>CustomBaseModelWithValidator.\_enforce\_model\_constraints
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#models/api_models)
-
-&uparrow; Back to [class index](#ESUGuncellemeModel)
-
-Validates the model according to the model constraints.
-#### <a name='esukapatmamodel'></a>ESUKapatmaModel
-Charge point delisting request model.
-#### <a name='esukayitmodel'></a>ESUKayitModel
-Charge point registration request model.
-##### <a name='functions'></a>Functions
-
-* [ESUKayitModel.\_enforce\_model\_constraints](#esukayitmodelenforcemodelconstraints)
-
-###### <a name='esukayitmodelenforcemodelconstraints'></a>ESUKayitModel.\_enforce\_model\_constraints
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#models/api_models)
-
-&uparrow; Back to [class index](#ESUKayitModel)
-
-Validates the model according to the model constraints.
-#### <a name='esumukellefbilgisi'></a>ESUMukellefBilgisi
-Intermediary model that encapsulates charge point and tax payer information.
-#### <a name='esumukellefmodel'></a>ESUMukellefModel
-Charge point tax payer info registration model.
-##### <a name='functions'></a>Functions
-
-* [CustomBaseModelWithValidator.\_enforce\_model\_constraints](#custombasemodelwithvalidatorenforcemodelconstraints)
-
-###### <a name='custombasemodelwithvalidatorenforcemodelconstraints'></a>CustomBaseModelWithValidator.\_enforce\_model\_constraints
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#models/api_models)
-
-&uparrow; Back to [class index](#ESUMukellefModel)
-
-Validates the model according to the model constraints.
-#### <a name='esuserino'></a>ESUSeriNo
-Charge point's serial number.
-#### <a name='esutipi'></a>ESUTipi
-Charge point type enum.
-#### <a name='fatura'></a>Fatura
-Invoice model.
-#### <a name='firma'></a>Firma
-Company info model.
-#### <a name='firmakodu'></a>FirmaKodu
-Company code model.
-#### <a name='lokasyon'></a>Lokasyon
-EV charging location model.
-#### <a name='mukellef'></a>Mukellef
-Tax payer model.
-#### <a name='mulkiyetsahibi'></a>MulkiyetSahibi
-Charge point owner model.
-#### <a name='sertifika'></a>Sertifika
-Certificate model.
-#### <a name='soket'></a>Soket
-Charge point's connectors.
-#### <a name='sokettipi'></a>SoketTipi
 Socket type enum.
-### <a name='functions'></a>Functions
 
-* [\_validate\_tax\_number](#validatetaxnumber)
+<a id="request_models.ESUTipi"></a>
 
-* [\_validate\_tax\_payer\_and\_update\_models](#validatetaxpayerandupdatemodels)
+## ESUTipi Objects
 
-#### <a name='validatetaxnumber'></a>\_validate\_tax\_number
-&uparrow; Back to [code documentation index](#codedocumentation)
+```python
+class ESUTipi(str, Enum)
+```
 
-&uparrow; Back to [module index](#models/api_models)
+Charge point type enum.
 
-Validates a given tax number.
+<a id="request_models.Soket"></a>
 
-    Args:
-        tax_nr (str): Tax number to validate
+## Soket Objects
 
-    Raises:
-        ValueError: In case tax_nr does not conform to tax number scheme
+```python
+class Soket(CustomBaseModel)
+```
 
-    Returns:
-        str: Validated tax_nr
+Charge point's connectors.
 
-#### <a name='validatetaxpayerandupdatemodels'></a>\_validate\_tax\_payer\_and\_update\_models
-&uparrow; Back to [code documentation index](#codedocumentation)
+<a id="request_models.Soket.soket_no"></a>
 
-&uparrow; Back to [module index](#models/api_models)
+#### soket\_no
 
-Validates both the tax payer registration and the charge point update models.
-## <a name='helperspyutils'></a>helpers/py\_utils
-&uparrow; Back to [code documentation index](#codedocumentation)
+Soket1, Soket2, Soket3, etc.
+
+<a id="request_models.ESUSeriNo"></a>
+
+## ESUSeriNo Objects
+
+```python
+class ESUSeriNo(CustomBaseModel)
+```
+
+Charge point's serial number.
+
+<a id="request_models.ESU"></a>
+
+## ESU Objects
+
+```python
+class ESU(ESUSeriNo)
+```
+
+Charge point model.
+
+<a id="request_models.ESU.esu_soket_sayisi"></a>
+
+#### esu\_soket\_sayisi
+
+"1", "2", "3", etc.
+
+<a id="request_models.FirmaKodu"></a>
+
+## FirmaKodu Objects
+
+```python
+class FirmaKodu(CustomBaseModel)
+```
+
+Company code model.
+
+<a id="request_models.Firma"></a>
+
+## Firma Objects
+
+```python
+class Firma(FirmaKodu)
+```
+
+Company info model.
+
+<a id="request_models.Lokasyon"></a>
+
+## Lokasyon Objects
+
+```python
+class Lokasyon(CustomBaseModel)
+```
+
+EV charging location model.
+
+<a id="request_models.Mukellef"></a>
+
+## Mukellef Objects
+
+```python
+class Mukellef(CustomBaseModel)
+```
+
+Tax payer model.
+
+<a id="request_models.Sertifika"></a>
+
+## Sertifika Objects
+
+```python
+class Sertifika(CustomBaseModel)
+```
+
+Certificate model.
+
+<a id="request_models.Fatura"></a>
+
+## Fatura Objects
+
+```python
+class Fatura(CustomBaseModel)
+```
+
+Invoice model.
+
+<a id="request_models.MulkiyetSahibi"></a>
+
+## MulkiyetSahibi Objects
+
+```python
+class MulkiyetSahibi(CustomBaseModel)
+```
+
+Charge point owner model.
+
+<a id="request_models.ESUMukellefBilgisi"></a>
+
+## ESUMukellefBilgisi Objects
+
+```python
+class ESUMukellefBilgisi(ESUSeriNo, Fatura, Lokasyon, Mukellef, MulkiyetSahibi,
+                         Sertifika)
+```
+
+Intermediary model that encapsulates charge point and tax payer information.
+
+<a id="request_models.ESUGuncellemeBilgisi"></a>
+
+## ESUGuncellemeBilgisi Objects
+
+```python
+class ESUGuncellemeBilgisi(ESUSeriNo, Fatura, Lokasyon, MulkiyetSahibi,
+                           Sertifika)
+```
+
+Intermediary model that encapsulates charge point and ownership information.
+
+<a id="request_models.CustomBaseModelWithValidator"></a>
+
+## CustomBaseModelWithValidator Objects
+
+```python
+class CustomBaseModelWithValidator(CustomBaseModel)
+```
+
+Custom base model with a predefined model validator function.
+
+<a id="request_models.ESUKayitModel"></a>
+
+## ESUKayitModel Objects
+
+```python
+class ESUKayitModel(Firma)
+```
+
+Charge point registration request model.
+
+<a id="request_models.ESUKayitModel.olustur"></a>
+
+#### olustur
+
+```python
+@classmethod
+def olustur(cls, firma: Firma, esu: ESU) -> ESUKayitModel
+```
+
+Constructs a ESUKayitModel from given `esu` and `firma` arguments.
+
+**Arguments**:
+
+- `firma` _Firma_ - Company information
+- `esu` _ESU_ - Charge point information
 
 
-### <a name='dependencies'></a>Dependencies
-* io
+**Returns**:
 
-* pandas
+- `ESUKayitModel` - Constructed model instance
 
-### <a name='classes'></a>Classes
+<a id="request_models.ESUKapatmaModel"></a>
 
-* [PyUtils](#pyutils)
+## ESUKapatmaModel Objects
 
-#### <a name='pyutils'></a>PyUtils
-Class encapsulating various python utility methods.
-## <a name='servicesesuservice'></a>services/esu\_service
-&uparrow; Back to [code documentation index](#codedocumentation)
+```python
+class ESUKapatmaModel(CustomBaseModel)
+```
+
+Charge point delisting request model.
+
+<a id="request_models.ESUMukellefModel"></a>
+
+## ESUMukellefModel Objects
+
+```python
+class ESUMukellefModel(CustomBaseModelWithValidator, FirmaKodu)
+```
+
+Charge point tax payer info registration model.
+
+<a id="request_models.ESUMukellefModel.olustur"></a>
+
+#### olustur
+
+```python
+@classmethod
+def olustur(cls,
+            esu_seri_no: str,
+            firma_kodu: str,
+            fatura: Fatura,
+            lokasyon: Lokasyon,
+            mukellef: Mukellef,
+            mulkiyet_sahibi: Optional[MulkiyetSahibi] = None,
+            sertifika: Optional[Sertifika] = None) -> ESUMukellefModel
+```
+
+Constructs a ESUMukellefModel from given arguments.
+
+**Arguments**:
+
+- `esu_seri_no` _str_ - Charge point serial number
+- `firma_kodu` _str_ - Company code
+- `fatura` _Fatura_ - Invoice information
+- `lokasyon` _Lokasyon_ - Location information
+- `mukellef` _Mukellef_ - Tax payer information
+  mulkiyet_sahibi (Optional[MulkiyetSahibi], optional):
+  Ownership information. Defaults to None.
+- `sertifika` _Optional[Sertifika], optional_ - Certificate. Defaults to None.
 
 
-### <a name='dependencies'></a>Dependencies
-* base64
+**Returns**:
 
-* concurrent
+- `ESUMukellefModel` - Constructed model instance
 
-* io
+<a id="request_models.ESUGuncellemeModel"></a>
 
-* json
+## ESUGuncellemeModel Objects
 
-* os
+```python
+class ESUGuncellemeModel(CustomBaseModelWithValidator, FirmaKodu)
+```
 
-* requests
+Charge point update request model.
 
-### <a name='classes'></a>Classes
+<a id="request_models.ESUGuncellemeModel.olustur"></a>
 
-* [ESUServis](#esuservis)
+#### olustur
 
-#### <a name='esuservis'></a>ESUServis
+```python
+@classmethod
+def olustur(cls,
+            esu_seri_no: ESUSeriNo,
+            firma_kodu: str,
+            fatura: Fatura,
+            lokasyon: Lokasyon,
+            mulkiyet_sahibi: Optional[MulkiyetSahibi] = None,
+            sertifika: Optional[Sertifika] = None) -> ESUGuncellemeModel
+```
+
+Constructs a ESUGuncellemeModel from given arguments.
+
+**Arguments**:
+
+- `esu_seri_no` _str_ - Charge point serial number
+- `firma_kodu` _str_ - Company code
+- `fatura` _Fatura_ - Invoice information
+- `lokasyon` _Lokasyon_ - Location information
+  mulkiyet_sahibi (Optional[MulkiyetSahibi], optional):
+  Ownership information. Defaults to None.
+- `sertifika` _Optional[Sertifika], optional_ - Certificate. Defaults to None.
+
+
+**Returns**:
+
+- `ESUGuncellemeModel` - Constructed model instance
+
+<a id="base_model"></a>
+
+# base\_model
+
+<a id="base_model.CustomBaseModel"></a>
+
+## CustomBaseModel Objects
+
+```python
+class CustomBaseModel(BaseModel)
+```
+
+Custom base model that ignores extra fields.
+
+<a id="service_models"></a>
+
+# service\_models
+
+<a id="service_models.EvetVeyaHayir"></a>
+
+## EvetVeyaHayir Objects
+
+```python
+class EvetVeyaHayir(str, Enum)
+```
+
+Enum for boolean config parameters.
+
+<a id="service_models.APIParametreleri"></a>
+
+## APIParametreleri Objects
+
+```python
+class APIParametreleri(CustomBaseModel)
+```
+
+Service model for API parameters.
+
+<a id="service_models.ESUServisKonfigurasyonu"></a>
+
+## ESUServisKonfigurasyonu Objects
+
+```python
+class ESUServisKonfigurasyonu(CustomBaseModel)
+```
+
+Service configuration model.
+
+<a id="service_models.ESUKayitSonucu"></a>
+
+## ESUKayitSonucu Objects
+
+```python
+class ESUKayitSonucu(CustomBaseModel)
+```
+
+Charge point registration output model.
+
+<a id="service_models.MukellefKayitSonucu"></a>
+
+## MukellefKayitSonucu Objects
+
+```python
+class MukellefKayitSonucu(CustomBaseModel)
+```
+
+Charge point tax payer registration model.
+
+<a id="service_models.ESUTopluKayitSonucu"></a>
+
+## ESUTopluKayitSonucu Objects
+
+```python
+class ESUTopluKayitSonucu(ESUSeriNo, ESUKayitSonucu, MukellefKayitSonucu)
+```
+
+Batch registration output model for single charge point.
+
+<a id="service_models.TopluKayitSonuc"></a>
+
+## TopluKayitSonuc Objects
+
+```python
+class TopluKayitSonuc(CustomBaseModel)
+```
+
+Charge point batch registration output model.
+
+<a id="service_models.ESUTopluGuncellemeSonucu"></a>
+
+## ESUTopluGuncellemeSonucu Objects
+
+```python
+class ESUTopluGuncellemeSonucu(ESUSeriNo)
+```
+
+Batch update output model for single charge point.
+
+<a id="service_models.TopluGuncellemeSonuc"></a>
+
+## TopluGuncellemeSonuc Objects
+
+```python
+class TopluGuncellemeSonuc(CustomBaseModel)
+```
+
+Charge point batch update output model.
+
+<a id="__init__"></a>
+
+# \_\_init\_\_
+
+<a id="esu_service"></a>
+
+# esu\_service
+
+<a id="esu_service.ESUServis"></a>
+
+## ESUServis Objects
+
+```python
+class ESUServis()
+```
+
 Class that handles GIB ESU EKS service operations.
-##### <a name='functions'></a>Functions
 
-* [ESUServis.\_\_init\_\_](#esuservisinit)
+<a id="esu_service.ESUServis.__init__"></a>
 
-* [ESUServis.\_api\_isteği](#esuservisapiisteği)
+#### \_\_init\_\_
 
-* [ESUServis.\_dosyaya\_yaz](#esuservisdosyayayaz)
-
-* [ESUServis.\_esu\_bilgisi\_hazirla](#esuservisesubilgisihazirla)
-
-* [ESUServis.\_guncelleme\_kaydi\_isle](#esuservisguncellemekaydiisle)
-
-* [ESUServis.\_kayit\_isle](#esuserviskayitisle)
-
-* [ESUServis.\_mukellef\_bilgisi\_hazirla](#esuservismukellefbilgisihazirla)
-
-* [ESUServis.cihaz\_kapatma](#esuserviscihazkapatma)
-
-* [ESUServis.cihaz\_kayit](#esuserviscihazkayit)
-
-* [ESUServis.kayit\_guncelle](#esuserviskayitguncelle)
-
-* [ESUServis.mukellef\_kayit](#esuservismukellefkayit)
-
-* [ESUServis.toplu\_guncelle](#esuservistopluguncelle)
-
-* [ESUServis.toplu\_kayit](#esuservistoplukayit)
-
-###### <a name='esuservisinit'></a>ESUServis.\_\_init\_\_
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
+```python
+def __init__(_config: Optional[Dict[str, str | None]] = None) -> None
+```
 
 ESUServis constructor.
 
-        Args:
-            _config (Optional[Dict[str, str  |  None]], optional):
-            Dictionary or env file path to read the config from. Defaults to None.
+**Arguments**:
 
-###### <a name='esuservisapiisteği'></a>ESUServis.\_api\_isteği
-&uparrow; Back to [code documentation index](#codedocumentation)
+  _config (Optional[Dict[str, str  |  None]], optional):
+  Dictionary or env file path to read the config from. Defaults to None.
 
-&uparrow; Back to [module index](#services/esu_service)
+<a id="esu_service.ESUServis.cihaz_kayit"></a>
 
-&uparrow; Back to [class index](#ESUServis)
+#### cihaz\_kayit
 
-Internal method to perform API requests.
-
-        Returns:
-            Yanit: GIB ESU EKS service reponse
-
-###### <a name='esuservisdosyayayaz'></a>ESUServis.\_dosyaya\_yaz
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
-
-Internal method to write the batch processing results to a file.
-
-        Args:
-            cikti_dosya_yolu (str): Output file path
-            icerik (str): Data to write to the output file
-
-###### <a name='esuservisesubilgisihazirla'></a>ESUServis.\_esu\_bilgisi\_hazirla
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
-
-
-        Internal method to construct a charge point registration request model instance.
-
-        Args:
-            kayit (dict): Dictionary to convert to an ESU instance.
-
-        Returns:
-            ESU: Constructed charge point registration request model instance.
-
-###### <a name='esuservisguncellemekaydiisle'></a>ESUServis.\_guncelleme\_kaydi\_isle
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
-
-Internal method to update a previously registered charge point's information.
-
-        Args:
-            kayit (dict): Dictionary corresponding to a row read from csv input
-            sonuc (TopluGuncellemeSonuc): Result model for processed update requests
-
-###### <a name='esuserviskayitisle'></a>ESUServis.\_kayit\_isle
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
-
-Internal method to register both the charge point and the tax payer.
-
-        Args:
-            kayit (dict): Dictionary corresponding to a row read from csv input
-            sonuc (TopluKayitSonuc): Result model for processed registration requests
-
-###### <a name='esuservismukellefbilgisihazirla'></a>ESUServis.\_mukellef\_bilgisi\_hazirla
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
-
-Internal method to construct a tax payer registration request model instance.
-
-        Args:
-            kayit (dict): Dictionary to convert to an ESUMukellefModel instance
-            esu (ESU): Charge point model instance
-
-        Returns:
-            ESUMukellefModel: Constructed tax payer registration request model instance.
-
-###### <a name='esuserviscihazkapatma'></a>ESUServis.cihaz\_kapatma
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
-
-Unregisters/delists a previously registered charge point.
-
-        Args:
-            cihaz_bilgisi (Optional[ESUKapatmaModel], optional):
-                Charge point delisting request model. Defaults to None.
-            esu_seri_no (Optional[str], optional):
-                Charge point serial number. Defaults to None.
-
-        Raises:
-            ValueError: When none of the arguments are provided
-
-        Returns:
-            Yanit: GIB ESU EKS service reponse
-
-###### <a name='esuserviscihazkayit'></a>ESUServis.cihaz\_kayit
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
+```python
+def cihaz_kayit(cihaz_bilgileri: Union[ESUKayitModel, ESU]) -> Yanit
+```
 
 Registers a charge point with the GIB ESU EKS system.
 
-        Args:
-            cihaz_bilgileri (Union[ESUKayitModel, ESU]): Charge point information
+**Arguments**:
 
-        Returns:
-            Yanit: GIB ESU EKS service reponse
+- `cihaz_bilgileri` _Union[ESUKayitModel, ESU]_ - Charge point information
 
-###### <a name='esuserviskayitguncelle'></a>ESUServis.kayit\_guncelle
-&uparrow; Back to [code documentation index](#codedocumentation)
 
-&uparrow; Back to [module index](#services/esu_service)
+**Returns**:
 
-&uparrow; Back to [class index](#ESUServis)
+- `Yanit` - GIB ESU EKS service reponse
 
-Updates a previously registered charge point's information.
+<a id="esu_service.ESUServis.mukellef_kayit"></a>
 
-        Args:
-            kayit_bilgileri (Union[ESUGuncellemeModel, Any], optional):
-                Charge point update request model. Defaults to None.
-            esu_seri_no (Optional[str], optional):
-                Charge point serial number. Defaults to None.
-            lokasyon (Optional[Lokasyon], optional):
-                Location information. Defaults to None.
-            fatura (Optional[Fatura], optional):
-                Invoice information. Defaults to None.
-            mulkiyet_sahibi (Optional[MulkiyetSahibi], optional):
-                Ownership information. Defaults to None.
-            sertifika (Optional[Sertifika], optional):
-                Certificate information. Defaults to None.
+#### mukellef\_kayit
 
-        Raises:
-            ValueError: When some information is missing to construct the request model
-
-        Returns:
-            Yanit: GIB ESU EKS service reponse
-
-###### <a name='esuservismukellefkayit'></a>ESUServis.mukellef\_kayit
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
+```python
+def mukellef_kayit(mukellef_bilgileri: Union[ESUMukellefModel, Any] = None,
+                   esu: Optional[Union[ESU, str]] = None,
+                   lokasyon: Optional[Lokasyon] = None,
+                   fatura: Optional[Fatura] = None,
+                   mukellef: Optional[Mukellef] = None,
+                   mulkiyet_sahibi: Optional[MulkiyetSahibi] = None,
+                   sertifika: Optional[Sertifika] = None) -> Yanit
+```
 
 Registers tax payer information for a charge point identified by `esu`.
 
-        Args:
-            mukellef_bilgileri (Union[ESUMukellefModel, Any], optional):
-                Tax payer request model. Defaults to None.
-            esu (Optional[Union[ESU, str]], optional):
-                Charge point information. Defaults to None.
-            lokasyon (Optional[Lokasyon], optional):
-                Location information. Defaults to None.
-            fatura (Optional[Fatura], optional):
-                Invoice information. Defaults to None.
-            mukellef (Optional[Mukellef], optional):
-                Tax payer information. Defaults to None.
-            mulkiyet_sahibi (Optional[MulkiyetSahibi], optional):
-                Ownership information. Defaults to None.
-            sertifika (Optional[Sertifika], optional):
-                Certificate information. Defaults to None.
+**Arguments**:
 
-        Raises:
-            ValueError: When some information is missing to construct the request model
-
-        Returns:
-            Yanit: GIB ESU EKS service reponse
-
-###### <a name='esuservistopluguncelle'></a>ESUServis.toplu\_guncelle
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
+  mukellef_bilgileri (Union[ESUMukellefModel, Any], optional):
+  Tax payer request model. Defaults to None.
+  esu (Optional[Union[ESU, str]], optional):
+  Charge point information. Defaults to None.
+  lokasyon (Optional[Lokasyon], optional):
+  Location information. Defaults to None.
+  fatura (Optional[Fatura], optional):
+  Invoice information. Defaults to None.
+  mukellef (Optional[Mukellef], optional):
+  Tax payer information. Defaults to None.
+  mulkiyet_sahibi (Optional[MulkiyetSahibi], optional):
+  Ownership information. Defaults to None.
+  sertifika (Optional[Sertifika], optional):
+  Certificate information. Defaults to None.
 
 
-        Batch updates previously registered charge points' information.
+**Raises**:
 
-        Args:
-            giris_dosya_yolu (Optional[str], optional):
-                Input csv file path. Defaults to None.
-            csv_string (Optional[io.StringIO], optional):
-                String data stream as alternative input. Defaults to None.
-            dosyaya_yaz (Optional[bool], optional):
-                Boolean flag to control whether report the results to a file.
-                Defaults to None.
-            cikti_dosya_yolu (Optional[str], optional):
-                Output file path (if `dosyaya_yaz` is True). Defaults to None.
-            paralel (Optional[bool], optional):
-                Boolean flag to control multithreaded processing. Defaults to None.
-
-        Returns:
-            dict[str, Any]: TopluGuncellemeSonuc instance
-            (which contains batch update results) as a dictionary
-
-###### <a name='esuservistoplukayit'></a>ESUServis.toplu\_kayit
-&uparrow; Back to [code documentation index](#codedocumentation)
-
-&uparrow; Back to [module index](#services/esu_service)
-
-&uparrow; Back to [class index](#ESUServis)
+- `ValueError` - When some information is missing to construct the request model
 
 
-        Batch registers charge points along with their tax payer information.
+**Returns**:
 
-        Args:
-            giris_dosya_yolu (Optional[str], optional):
-                Input csv file path. Defaults to None.
-            csv_string (Optional[io.StringIO], optional):
-                String data stream as alternative input. Defaults to None.
-            dosyaya_yaz (Optional[bool], optional):
-                Boolean flag to control whether report the results to a file.
-                Defaults to None.
-            cikti_dosya_yolu (Optional[str], optional):
-                Output file path (if `dosyaya_yaz` is True). Defaults to None.
-            paralel (Optional[bool], optional):
-                Boolean flag to control multithreaded processing. Defaults to None.
+- `Yanit` - GIB ESU EKS service reponse
 
-        Returns:
-            dict[str, Any]: TopluKayitSonuc instance
-            (which contains batch processing results) as a dictionary
+<a id="esu_service.ESUServis.toplu_kayit"></a>
+
+#### toplu\_kayit
+
+```python
+def toplu_kayit(giris_dosya_yolu: Optional[str] = None,
+                csv_string: Optional[io.StringIO] = None,
+                dosyaya_yaz: Optional[bool] = None,
+                cikti_dosya_yolu: Optional[str] = None,
+                paralel_calistir: Optional[bool] = None) -> dict[str, Any]
+```
+
+Batch registers charge points along with their tax payer information.
+
+**Arguments**:
+
+  giris_dosya_yolu (Optional[str], optional):
+  Input csv file path. Defaults to None.
+  csv_string (Optional[io.StringIO], optional):
+  String data stream as alternative input. Defaults to None.
+  dosyaya_yaz (Optional[bool], optional):
+  Boolean flag to control whether report the results to a file.
+  Defaults to None.
+  cikti_dosya_yolu (Optional[str], optional):
+  Output file path (if `dosyaya_yaz` is True). Defaults to None.
+  paralel (Optional[bool], optional):
+  Boolean flag to control multithreaded processing. Defaults to None.
+
+
+**Returns**:
+
+  dict[str, Any]: TopluKayitSonuc instance
+  (which contains batch processing results) as a dictionary
+
+<a id="esu_service.ESUServis.kayit_guncelle"></a>
+
+#### kayit\_guncelle
+
+```python
+def kayit_guncelle(kayit_bilgileri: Union[ESUGuncellemeModel, Any] = None,
+                   esu_seri_no: Optional[str] = None,
+                   lokasyon: Optional[Lokasyon] = None,
+                   fatura: Optional[Fatura] = None,
+                   mulkiyet_sahibi: Optional[MulkiyetSahibi] = None,
+                   sertifika: Optional[Sertifika] = None) -> Yanit
+```
+
+Updates a previously registered charge point's information.
+
+**Arguments**:
+
+  kayit_bilgileri (Union[ESUGuncellemeModel, Any], optional):
+  Charge point update request model. Defaults to None.
+  esu_seri_no (Optional[str], optional):
+  Charge point serial number. Defaults to None.
+  lokasyon (Optional[Lokasyon], optional):
+  Location information. Defaults to None.
+  fatura (Optional[Fatura], optional):
+  Invoice information. Defaults to None.
+  mulkiyet_sahibi (Optional[MulkiyetSahibi], optional):
+  Ownership information. Defaults to None.
+  sertifika (Optional[Sertifika], optional):
+  Certificate information. Defaults to None.
+
+
+**Raises**:
+
+- `ValueError` - When some information is missing to construct the request model
+
+
+**Returns**:
+
+- `Yanit` - GIB ESU EKS service reponse
+
+<a id="esu_service.ESUServis.toplu_guncelle"></a>
+
+#### toplu\_guncelle
+
+```python
+def toplu_guncelle(giris_dosya_yolu: Optional[str] = None,
+                   csv_string: Optional[io.StringIO] = None,
+                   dosyaya_yaz: Optional[bool] = None,
+                   cikti_dosya_yolu: Optional[str] = None,
+                   paralel_calistir: Optional[bool] = None) -> dict[str, Any]
+```
+
+Batch updates previously registered charge points' information.
+
+**Arguments**:
+
+  giris_dosya_yolu (Optional[str], optional):
+  Input csv file path. Defaults to None.
+  csv_string (Optional[io.StringIO], optional):
+  String data stream as alternative input. Defaults to None.
+  dosyaya_yaz (Optional[bool], optional):
+  Boolean flag to control whether report the results to a file.
+  Defaults to None.
+  cikti_dosya_yolu (Optional[str], optional):
+  Output file path (if `dosyaya_yaz` is True). Defaults to None.
+  paralel (Optional[bool], optional):
+  Boolean flag to control multithreaded processing. Defaults to None.
+
+
+**Returns**:
+
+  dict[str, Any]: TopluGuncellemeSonuc instance
+  (which contains batch update results) as a dictionary
+
+<a id="esu_service.ESUServis.cihaz_kapatma"></a>
+
+#### cihaz\_kapatma
+
+```python
+def cihaz_kapatma(cihaz_bilgisi: Optional[ESUKapatmaModel] = None,
+                  esu_seri_no: Optional[str] = None) -> Yanit
+```
+
+Unregisters/delists a previously registered charge point.
+
+**Arguments**:
+
+  cihaz_bilgisi (Optional[ESUKapatmaModel], optional):
+  Charge point delisting request model. Defaults to None.
+  esu_seri_no (Optional[str], optional):
+  Charge point serial number. Defaults to None.
+
+
+**Raises**:
+
+- `ValueError` - When none of the arguments are provided
+
+
+**Returns**:
+
+- `Yanit` - GIB ESU EKS service reponse
+
+<a id="__init__"></a>
+
+# \_\_init\_\_
+
+<a id="py_utils"></a>
+
+# py\_utils
+
+<a id="py_utils.PyUtils"></a>
+
+## PyUtils Objects
+
+```python
+class PyUtils()
+```
+
+Class encapsulating various python utility methods.
+
+<a id="py_utils.PyUtils.read_csv"></a>
+
+#### read\_csv
+
+```python
+@classmethod
+def read_csv(
+        cls, filepath_or_buffer: Union[str,
+                                       io.StringIO]) -> List[Dict[str, str]]
+```
+
+Reads input data from a CSV file or string stream.
+
+**Arguments**:
+
+- `filepath_or_buffer` _Union[str, io.StringIO]_ - Path to a CSV file
+  or a string stream containing CSV data.
+
+
+**Returns**:
+
+  List[Dict[str, str]]: A list of dictionaries representing rows in the CSV
+  with all fields as strings.

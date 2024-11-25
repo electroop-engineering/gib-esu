@@ -1,41 +1,41 @@
+import csv
 import io
-from typing import Union
-
-import pandas as pd
-from pandas import DataFrame
-from pydantic import FilePath
+from typing import Dict, List, Union
 
 
 class PyUtils:
     """Class encapsulating various python utility methods."""
 
     @classmethod
-    def read_csv_input(
-        cls, filepath_or_buffer: Union[FilePath, str, io.StringIO]
-    ) -> DataFrame:
-        """Reads input data either from a csv formatted text file or string stream.
+    def read_csv(
+        cls, filepath_or_buffer: Union[str, io.StringIO]
+    ) -> List[Dict[str, str]]:
+        """Reads input data from a CSV file or string stream.
 
         Args:
-            filepath_or_buffer (Union[FilePath, str, io.StringIO]):
-            Csv input file path or string input stream to extract the data from
+            filepath_or_buffer (Union[str, io.StringIO]): Path to a CSV file
+            or a string stream containing CSV data.
 
         Returns:
-            DataFrame: A pandas DataFrame corresponding to csv data
+            List[Dict[str, str]]: A list of dictionaries representing rows in the CSV
+            with all fields as strings.
         """
 
-        # names of columns whose data should be interpreted as string type
-        column_names = ["il_kodu", "esu_seri_no", "esu_soket_sayisi", "mukellef_vkn"]
+        if isinstance(filepath_or_buffer, str) and not isinstance(
+            filepath_or_buffer, io.StringIO
+        ):
+            file = open(filepath_or_buffer, mode="r", encoding="utf-8")
+        else:
+            file = filepath_or_buffer
 
-        records = pd.read_csv(
-            filepath_or_buffer,
-            dtype={
-                column_names[0]: str,
-                column_names[1]: str,
-                column_names[2]: str,
-                column_names[3]: str,
-            },
-        )
+        with file:
+            reader = csv.DictReader(file)
 
-        # replace NA/NaN values with empty strings
-        records = records.fillna("")
+            records = []
+            for row in reader:
+                record = {
+                    key: str(row.get(key, "") or "") for key in reader.fieldnames or []
+                }
+                records.append(record)
+
         return records

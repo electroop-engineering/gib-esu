@@ -1,28 +1,17 @@
 from enum import Enum
-from typing import Annotated, List, Optional
+from typing import List, Optional
 
-from pydantic import Field, HttpUrl, PositiveInt
+from pydantic import HttpUrl
 
-from gib_esu.models.api_models import (
+from gib_esu.models.base_model import CustomBaseModel
+from gib_esu.models.request_models import (
     ESUSeriNo,
     NonEmptyString,
     TaxNumber,
     TaxNumberOrEmpty,
 )
-from gib_esu.models.base_model import CustomBaseModel
-
-# regex patterns
-
-RegEx__Api_Durum_Kodu = r"^\b\d{4}\b$"
 
 # enums
-
-
-class Durum(str, Enum):
-    """Enum for API response status codes."""
-
-    SUCCESS = "success"
-    FAILURE = "basarisiz"
 
 
 class EvetVeyaHayir(str, Enum):
@@ -32,37 +21,7 @@ class EvetVeyaHayir(str, Enum):
     HAYIR = "0"
 
 
-# api response model
-
-
-class Sonuc(CustomBaseModel):
-    """Api result model."""
-
-    esu_seri_no: NonEmptyString
-    sira_no: PositiveInt
-    kod: str = Field(pattern=RegEx__Api_Durum_Kodu)
-    mesaj: str
-
-
-class Yanit(CustomBaseModel):
-    """Api response model."""
-
-    durum: Durum
-    sonuc: Annotated[List[Sonuc], Field(default_factory=list, min_length=1)]
-
-
 # service config models
-
-
-class API(CustomBaseModel):
-    """Service model for API URLs."""
-
-    PROD_API_URL: HttpUrl
-    TEST_API_URL: HttpUrl
-    ESU_KAYIT_PATH: str
-    ESU_MUKELLEF_DURUM_PATH: str
-    ESU_GUNCELLEME_PATH: str
-    ESU_KAPATMA_PATH: str
 
 
 class APIParametreleri(CustomBaseModel):
