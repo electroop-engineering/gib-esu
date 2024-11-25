@@ -579,7 +579,8 @@ def toplu_kayit(giris_dosya_yolu: Optional[str] = None,
                 csv_string: Optional[io.StringIO] = None,
                 dosyaya_yaz: Optional[bool] = None,
                 cikti_dosya_yolu: Optional[str] = None,
-                paralel_calistir: Optional[bool] = None) -> dict[str, Any]
+                paralel_calistir: Optional[bool] = None,
+                istekleri_logla: Optional[bool] = None) -> dict[str, Any]
 ```
 
 Batch registers charge points along with their tax payer information.
@@ -597,6 +598,8 @@ Batch registers charge points along with their tax payer information.
   Output file path (if `dosyaya_yaz` is True). Defaults to None.
   paralel (Optional[bool], optional):
   Boolean flag to control multithreaded processing. Defaults to None.
+  istekleri_logla (Optional[bool], optional):
+  Boolean flag to log api requests to console.
 
 
 **Returns**:
@@ -653,7 +656,8 @@ def toplu_guncelle(giris_dosya_yolu: Optional[str] = None,
                    csv_string: Optional[io.StringIO] = None,
                    dosyaya_yaz: Optional[bool] = None,
                    cikti_dosya_yolu: Optional[str] = None,
-                   paralel_calistir: Optional[bool] = None) -> dict[str, Any]
+                   paralel_calistir: Optional[bool] = None,
+                   istekleri_logla: Optional[bool] = None) -> dict[str, Any]
 ```
 
 Batch updates previously registered charge points' information.
@@ -671,6 +675,8 @@ Batch updates previously registered charge points' information.
   Output file path (if `dosyaya_yaz` is True). Defaults to None.
   paralel (Optional[bool], optional):
   Boolean flag to control multithreaded processing. Defaults to None.
+  istekleri_logla (Optional[bool], optional):
+  Boolean flag to log api requests to console.
 
 
 **Returns**:
