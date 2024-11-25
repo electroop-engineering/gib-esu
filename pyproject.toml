@@ -1,7 +1,3 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "gib-esu"
 dynamic = ["version"]
@@ -10,19 +6,23 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = { file = "LICENSE.md" }
 authors = [
-    { name = "Özcan Türkmen", email = "ozcan@electroop.io" },
+    { name = "Electroop Engineering", email = "dev@electroop.io" },
 ]
 maintainers = [
     { name = "Özcan Türkmen", email = "ozcan@electroop.io" },
 ]
 keywords = ["GİB EŞÜ EKS", "Elektrikli şarj üniteleri", "şarj ağı işletmecileri"]
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "pandas>=2.2.2,<3.0.0",
     "requests>=2.32.3,<3.0.0",
     "pydantic>=2.9.2,<3.0.0",
     "python-dotenv>=1.0.0"
@@ -47,3 +47,10 @@ packages = ["gib_esu", "gib_esu.models", "gib_esu.helpers", "gib_esu.services"]
 
 [tool.setuptools.dynamic]
 version = {attr = "gib_esu.__version__"}
+
+[[tool.pydoc-markdown.loaders]]
+type = "python"
+search_path = [ "gib_esu/models", "gib_esu/services", "gib_esu/helpers" ]
+
+[tool.pydoc-markdown.renderer]
+type = "markdown"

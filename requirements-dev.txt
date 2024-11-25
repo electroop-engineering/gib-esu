@@ -7,5 +7,6 @@ pydocstyle==6.3.0
 Pygments==2.18.0
 pytest==8.2.2
 pytest-cov==6.0.0
+pytest-html==4.1.1
 python-dotenv==1.0.0
 requests-mock==1.12.1

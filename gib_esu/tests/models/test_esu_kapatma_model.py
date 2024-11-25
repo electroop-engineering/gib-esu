@@ -4,7 +4,7 @@ from typing import List, cast
 import pytest
 from pydantic import ValidationError
 
-from gib_esu.models.api_models import ESUKapatmaModel, ESUSeriNo
+from gib_esu.models import ESUKapatmaModel, ESUSeriNo
 
 
 @pytest.fixture(scope="module")

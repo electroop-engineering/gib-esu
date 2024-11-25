@@ -12,7 +12,7 @@ from dotenv import dotenv_values
 from pydantic import HttpUrl
 
 from gib_esu.helpers.py_utils import PyUtils
-from gib_esu.models.api_models import (
+from gib_esu.models.request_models import (
     ESU,
     ESUGuncellemeModel,
     ESUKapatmaModel,
@@ -27,6 +27,7 @@ from gib_esu.models.api_models import (
     Sertifika,
     Soket,
 )
+from gib_esu.models.response_models import Yanit
 from gib_esu.models.service_models import (
     APIParametreleri,
     ESUServisKonfigurasyonu,
@@ -35,7 +36,6 @@ from gib_esu.models.service_models import (
     EvetVeyaHayir,
     TopluGuncellemeSonuc,
     TopluKayitSonuc,
-    Yanit,
 )
 
 
@@ -43,15 +43,15 @@ class ESUServis:
     """Class that handles GIB ESU EKS service operations."""
 
     # name of the default environment file to read the configuration
-    DEFAULT_ENV = ".env"
+    _DEFAULT_ENV = ".env"
 
-    class API(str, Enum):
+    class _API(str, Enum):
         """Enum for available GIB ESU EKS service base urls."""
 
         PROD = "https://okc.gib.gov.tr/api/v1/okc/okcesu"
         TEST = "https://okctest.gib.gov.tr/api/v1/okc/okcesu"
 
-    class ISTEK_TIPI(str, Enum):
+    class _ISTEK_TIPI(str, Enum):
         """Enum for available GIB ESU EKS service paths."""
 
         ESU_KAYIT = "/yeniEsuKayit"
@@ -66,7 +66,7 @@ class ESUServis:
             _config (Optional[Dict[str, str  |  None]], optional):
             Dictionary or env file path to read the config from. Defaults to None.
         """
-        _cfg = dotenv_values(ESUServis.DEFAULT_ENV) if _config is None else _config
+        _cfg = dotenv_values(ESUServis._DEFAULT_ENV) if _config is None else _config
         config = ESUServisKonfigurasyonu.model_validate(_cfg)
         self._api = APIParametreleri(
             api_sifre=str(config.GIB_API_SIFRE),
@@ -86,9 +86,9 @@ class ESUServis:
             epdk_lisans_no=config.EPDK_LISANS_KODU,
         )
         self._api.api_url = (
-            cast(HttpUrl, ESUServis.API.PROD)
+            cast(HttpUrl, ESUServis._API.PROD)
             if self._api.prod_api
-            else cast(HttpUrl, ESUServis.API.TEST)
+            else cast(HttpUrl, ESUServis._API.TEST)
         )
         # no ssl warnings will be displayed when `ssl_dogrulama` is set to `0` (False)
         if not self._api.ssl_dogrulama:
@@ -98,7 +98,7 @@ class ESUServis:
             urllib3.disable_warnings(InsecureRequestWarning)
 
     def _api_isteği(
-        self, data: Any, istek_tipi: ISTEK_TIPI = ISTEK_TIPI.ESU_KAYIT
+        self, data: Any, istek_tipi: _ISTEK_TIPI = _ISTEK_TIPI.ESU_KAYIT
     ) -> Yanit:
         """Internal method to perform API requests.
 
@@ -223,7 +223,7 @@ class ESUServis:
             veri = mukellef_bilgileri
 
         return self._api_isteği(
-            veri.model_dump(), istek_tipi=ESUServis.ISTEK_TIPI.ESU_MUKELLEF
+            veri.model_dump(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_MUKELLEF
         )
 
     def _esu_bilgisi_hazirla(self, kayit: dict) -> ESU:
@@ -351,7 +351,7 @@ class ESUServis:
             / "data"
             / "esu_list.csv"
         )
-        records = PyUtils.read_csv_input(giris_dosya_yolu or csv_string or csv_path)
+        records = PyUtils.read_csv(giris_dosya_yolu or csv_string or str(csv_path))
         print(f"{giris_dosya_yolu or csv_path} csv giriş dosyası okundu")
 
         sonuc = TopluKayitSonuc(sonuclar=[], toplam=0)
@@ -364,16 +364,16 @@ class ESUServis:
                 max_workers=max((os.cpu_count() or 6) - 2, 1)
             ) as executor:
                 futures = [
-                    executor.submit(self._kayit_isle, dict(record), sonuc)
-                    for _, record in records.iterrows()
+                    executor.submit(self._kayit_isle, record, sonuc)
+                    for record in records
                 ]
                 concurrent.futures.wait(
                     futures, return_when=concurrent.futures.ALL_COMPLETED
                 )
 
         else:
-            for _, record in records.iterrows():
-                self._kayit_isle(dict(record), sonuc)
+            for record in records:
+                self._kayit_isle(record, sonuc)
 
         sonuc.toplam = len(sonuc.sonuclar)
 
@@ -450,7 +450,7 @@ class ESUServis:
             veri = kayit_bilgileri
 
         return self._api_isteği(
-            veri.model_dump(), istek_tipi=ESUServis.ISTEK_TIPI.ESU_GUNCELLEME
+            veri.model_dump(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_GUNCELLEME
         )
 
     def _guncelleme_kaydi_isle(self, kayit: dict, sonuc: TopluGuncellemeSonuc) -> None:
@@ -518,7 +518,7 @@ class ESUServis:
             / "data"
             / "esu_list.csv"
         )
-        records = PyUtils.read_csv_input(giris_dosya_yolu or csv_string or csv_path)
+        records = PyUtils.read_csv(giris_dosya_yolu or csv_string or str(csv_path))
         print(f"{giris_dosya_yolu or csv_path} csv giriş dosyası okundu")
 
         sonuc = TopluGuncellemeSonuc(sonuclar=[], toplam=0)
@@ -531,16 +531,16 @@ class ESUServis:
                 max_workers=max((os.cpu_count() or 6) - 2, 1)
             ) as executor:
                 futures = [
-                    executor.submit(self._guncelleme_kaydi_isle, dict(record), sonuc)
-                    for _, record in records.iterrows()
+                    executor.submit(self._guncelleme_kaydi_isle, record, sonuc)
+                    for record in records
                 ]
                 concurrent.futures.wait(
                     futures, return_when=concurrent.futures.ALL_COMPLETED
                 )
 
         else:
-            for _, record in records.iterrows():
-                self._guncelleme_kaydi_isle(dict(record), sonuc)
+            for record in records:
+                self._guncelleme_kaydi_isle(record, sonuc)
 
         sonuc.toplam = len(sonuc.sonuclar)
 
@@ -590,5 +590,5 @@ class ESUServis:
                 "verilmemiş ya da verili değer geçersiz"
             )
         return self._api_isteği(
-            cihaz.model_dump(), istek_tipi=ESUServis.ISTEK_TIPI.ESU_KAPATMA
+            cihaz.model_dump(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_KAPATMA
         )

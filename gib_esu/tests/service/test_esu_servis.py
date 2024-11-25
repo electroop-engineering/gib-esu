@@ -8,7 +8,7 @@ import pytest
 import requests_mock
 from dotenv import dotenv_values
 
-from gib_esu.models.api_models import (
+from gib_esu.models.request_models import (
     ESU,
     ESUGuncellemeBilgisi,
     ESUGuncellemeModel,
@@ -25,14 +25,12 @@ from gib_esu.models.api_models import (
     Soket,
     SoketTipi,
 )
+from gib_esu.models.response_models import Durum, Sonuc, Yanit
 from gib_esu.models.service_models import (
-    Durum,
     ESUTopluGuncellemeSonucu,
     ESUTopluKayitSonucu,
-    Sonuc,
     TopluGuncellemeSonuc,
     TopluKayitSonuc,
-    Yanit,
 )
 from gib_esu.services.esu_service import ESUServis
 
@@ -181,7 +179,7 @@ def test_esu_servis_cihaz_kayit(
     servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
 
     mock_api.post(
-        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_KAYIT}",
+        f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_KAYIT}",
         json=test_yanit.model_dump(),
     )
 
@@ -203,7 +201,7 @@ def test_mukellef_kayit(
     servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
 
     mock_api.post(
-        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_MUKELLEF}",
+        f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_MUKELLEF}",
         json=test_yanit.model_dump(),
     )
 
@@ -255,11 +253,11 @@ def test_toplu_kayit(
     servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
 
     mock_api.post(
-        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_KAYIT}",
+        f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_KAYIT}",
         json=test_yanit.model_dump(),
     )
     mock_api.post(
-        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_MUKELLEF}",
+        f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_MUKELLEF}",
         json=test_yanit.model_dump(),
     )
 
@@ -311,7 +309,7 @@ def test_kayit_guncelle(
     servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
 
     mock_api.post(
-        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_GUNCELLEME}",
+        f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_GUNCELLEME}",
         json=test_yanit.model_dump(),
     )
 
@@ -353,7 +351,7 @@ def test_toplu_guncelle(
     servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
 
     mock_api.post(
-        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_GUNCELLEME}",
+        f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_GUNCELLEME}",
         json=test_yanit.model_dump(),
     )
 
@@ -403,7 +401,7 @@ def test_cihaz_kapatma(
     servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
 
     mock_api.post(
-        f"{servis._api.api_url}{ESUServis.ISTEK_TIPI.ESU_KAPATMA}",
+        f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_KAPATMA}",
         json=test_yanit.model_dump(),
     )
 
