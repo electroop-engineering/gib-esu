@@ -41,4 +41,4 @@ jobs:
 
       - name: Run pytest with coverage
         run: |
-          pytest --cov=models --cov=service --cov-report=term-missing
+          pytest --cov=gib_esu.models --cov=gib_esu.services --cov=gib_esu.helpers --cov-report=term-missing
