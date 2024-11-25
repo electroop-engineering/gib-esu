@@ -145,6 +145,7 @@ sonuc = servis.toplu_kayit(
     dosyaya_yaz=True,  # varsayılan False
     cikti_dosya_yolu="output.json",  # varsayılan "gonderim_raporu.json"
     paralel_calistir=True,  # varsayılan False
+    istekleri_logla=True,  # varsayılan False
 )
 
 bitis = time()
@@ -212,6 +213,7 @@ sonuc = servis.toplu_guncelle(
     dosyaya_yaz=True,  # varsayılan False
     cikti_dosya_yolu="output.json",  # varsayılan "gonderim_raporu.json"
     paralel_calistir=True,  # varsayılan False
+    istekleri_logla=True,  # varsayılan False
 )
 
 bitis = time()
