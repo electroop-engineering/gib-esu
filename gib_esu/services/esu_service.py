@@ -2,9 +2,9 @@ import base64
 import concurrent.futures
 import io
 import json
+import logging
 import os
 from enum import Enum
-from pathlib import Path
 from typing import Any, Dict, Optional, Union, cast
 
 import requests
@@ -97,6 +97,16 @@ class ESUServis:
 
             urllib3.disable_warnings(InsecureRequestWarning)
 
+        # configure logging
+        self.logger = logging.getLogger(self.__class__.__name__)
+        handler = logging.StreamHandler()  # console logger
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+        self.logger.setLevel(logging.INFO)
+
     def _api_isteği(
         self, data: Any, istek_tipi: _ISTEK_TIPI = _ISTEK_TIPI.ESU_KAYIT
     ) -> Yanit:
@@ -139,6 +149,7 @@ class ESUServis:
                 esu=cihaz_bilgileri,
             )
         )
+        self.logger.debug(cihaz.model_dump_json())
         return self._api_isteği(cihaz.model_dump())
 
     def mukellef_kayit(
@@ -221,6 +232,8 @@ class ESUServis:
             )
         elif isinstance(mukellef_bilgileri, ESUMukellefModel):
             veri = mukellef_bilgileri
+
+        self.logger.debug(veri.model_dump_json())
 
         return self._api_isteği(
             veri.model_dump(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_MUKELLEF
@@ -319,11 +332,14 @@ class ESUServis:
 
     def toplu_kayit(
         self,
-        giris_dosya_yolu: Optional[str] = None,
+        giris_dosya_yolu: Optional[str] = None,  # using "envanter.csv" when None
         csv_string: Optional[io.StringIO] = None,
         dosyaya_yaz: Optional[bool] = None,
-        cikti_dosya_yolu: Optional[str] = None,
+        cikti_dosya_yolu: Optional[
+            str
+        ] = None,  # using "gonderim_raporu.json" when None
         paralel_calistir: Optional[bool] = None,
+        istekleri_logla: Optional[bool] = None,
     ) -> dict[str, Any]:
         """
         Batch registers charge points along with their tax payer information.
@@ -340,23 +356,30 @@ class ESUServis:
                 Output file path (if `dosyaya_yaz` is True). Defaults to None.
             paralel (Optional[bool], optional):
                 Boolean flag to control multithreaded processing. Defaults to None.
+            istekleri_logla (Optional[bool], optional):
+                Boolean flag to log api requests to console.
 
         Returns:
             dict[str, Any]: TopluKayitSonuc instance
             (which contains batch processing results) as a dictionary
         """
-        csv_path = (
-            Path(__file__).resolve().parent.parent
-            / "resources"
-            / "data"
-            / "esu_list.csv"
-        )
-        records = PyUtils.read_csv(giris_dosya_yolu or csv_string or str(csv_path))
-        print(f"{giris_dosya_yolu or csv_path} csv giriş dosyası okundu")
+        working_dir = os.getcwd()
+        csv_path = os.path.join(working_dir, "envanter.csv")
+
+        if not giris_dosya_yolu and not csv_string and not os.path.exists(csv_path):
+            raise FileNotFoundError(
+                f"{working_dir} dizininde envanter.csv dosyası bulunamadı"
+            )
+
+        if istekleri_logla:
+            self.logger.setLevel(logging.DEBUG)
+
+        records = PyUtils.read_csv(giris_dosya_yolu or csv_string or csv_path)
+        self.logger.info(f"{giris_dosya_yolu or csv_path} giriş dosyası okundu")
 
         sonuc = TopluKayitSonuc(sonuclar=[], toplam=0)
 
-        print("GİB'e gönderim başlıyor...")
+        self.logger.info("GİB'e gönderim başlıyor...")
 
         if bool(paralel_calistir):
 
@@ -382,6 +405,10 @@ class ESUServis:
                 cikti_dosya_yolu=(cikti_dosya_yolu or "gonderim_raporu.json"),
                 icerik=sonuc.model_dump_json(indent=4),
             )
+
+        # conditionally restore default logging level
+        if istekleri_logla:
+            self.logger.setLevel(logging.INFO)
 
         return sonuc.model_dump()
 
@@ -449,6 +476,8 @@ class ESUServis:
         elif isinstance(kayit_bilgileri, ESUGuncellemeModel):
             veri = kayit_bilgileri
 
+        self.logger.debug(veri.model_dump_json())
+
         return self._api_isteği(
             veri.model_dump(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_GUNCELLEME
         )
@@ -485,11 +514,14 @@ class ESUServis:
 
     def toplu_guncelle(
         self,
-        giris_dosya_yolu: Optional[str] = None,
+        giris_dosya_yolu: Optional[str] = None,  # using "envanter.csv" when None
         csv_string: Optional[io.StringIO] = None,
         dosyaya_yaz: Optional[bool] = None,
-        cikti_dosya_yolu: Optional[str] = None,
+        cikti_dosya_yolu: Optional[
+            str
+        ] = None,  # using "gonderim_raporu.json" when None
         paralel_calistir: Optional[bool] = None,
+        istekleri_logla: Optional[bool] = None,
     ) -> dict[str, Any]:
         """
         Batch updates previously registered charge points' information.
@@ -506,24 +538,31 @@ class ESUServis:
                 Output file path (if `dosyaya_yaz` is True). Defaults to None.
             paralel (Optional[bool], optional):
                 Boolean flag to control multithreaded processing. Defaults to None.
+            istekleri_logla (Optional[bool], optional):
+                Boolean flag to log api requests to console.
 
         Returns:
             dict[str, Any]: TopluGuncellemeSonuc instance
             (which contains batch update results) as a dictionary
         """
 
-        csv_path = (
-            Path(__file__).resolve().parent.parent
-            / "resources"
-            / "data"
-            / "esu_list.csv"
-        )
-        records = PyUtils.read_csv(giris_dosya_yolu or csv_string or str(csv_path))
-        print(f"{giris_dosya_yolu or csv_path} csv giriş dosyası okundu")
+        working_dir = os.getcwd()
+        csv_path = os.path.join(working_dir, "envanter.csv")
+
+        if not giris_dosya_yolu and not csv_string and not os.path.exists(csv_path):
+            raise FileNotFoundError(
+                f"{working_dir} dizininde envanter.csv dosyası bulunamadı"
+            )
+
+        if istekleri_logla:
+            self.logger.setLevel(logging.DEBUG)
+
+        records = PyUtils.read_csv(giris_dosya_yolu or csv_string or csv_path)
+        self.logger.info(f"{giris_dosya_yolu or csv_path} giriş dosyası okundu")
 
         sonuc = TopluGuncellemeSonuc(sonuclar=[], toplam=0)
 
-        print("GİB'e gönderim başlıyor...")
+        self.logger.info("GİB'e gönderim başlıyor...")
 
         if bool(paralel_calistir):
 
@@ -549,6 +588,10 @@ class ESUServis:
                 cikti_dosya_yolu=(cikti_dosya_yolu or "gonderim_raporu.json"),
                 icerik=sonuc.model_dump_json(indent=4),
             )
+
+        # conditionally restore default logging level
+        if istekleri_logla:
+            self.logger.setLevel(logging.INFO)
 
         return sonuc.model_dump()
 

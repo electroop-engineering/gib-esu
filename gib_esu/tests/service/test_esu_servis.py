@@ -1,5 +1,6 @@
 import io
 import json
+import logging
 from io import StringIO
 from typing import Any
 from unittest.mock import mock_open, patch
@@ -252,6 +253,11 @@ def test_toplu_kayit(
 
     servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
 
+    with pytest.raises(FileNotFoundError) as f:
+        resp = servis.toplu_kayit()
+
+    assert "envanter.csv" in f.value.args[0]
+
     mock_api.post(
         f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_KAYIT}",
         json=test_yanit.model_dump(),
@@ -261,13 +267,15 @@ def test_toplu_kayit(
         json=test_yanit.model_dump(),
     )
 
-    resp = servis.toplu_kayit(csv_string=sample_csv)
+    resp = servis.toplu_kayit(csv_string=sample_csv, istekleri_logla=True)
 
     assert TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
     assert (
         TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no
         == test_yanit.sonuc[0].esu_seri_no
     )
+
+    assert servis.logger.level == logging.INFO
 
     resp = servis.toplu_kayit(csv_string=sample_csv2, paralel_calistir=True)
     assert TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
@@ -350,18 +358,25 @@ def test_toplu_guncelle(
 
     servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
 
+    with pytest.raises(FileNotFoundError) as f:
+        resp = servis.toplu_guncelle()
+
+    assert "envanter.csv" in f.value.args[0]
+
     mock_api.post(
         f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_GUNCELLEME}",
         json=test_yanit.model_dump(),
     )
 
-    resp = servis.toplu_guncelle(csv_string=sample_csv)
+    resp = servis.toplu_guncelle(csv_string=sample_csv, istekleri_logla=True)
 
     assert TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
     assert (
         TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no
         == test_yanit.sonuc[0].esu_seri_no
     )
+
+    assert servis.logger.level == logging.INFO
 
     resp = servis.toplu_guncelle(csv_string=sample_csv2, paralel_calistir=True)
     assert TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
