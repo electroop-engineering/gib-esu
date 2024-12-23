@@ -1,7 +1,8 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class CustomBaseModel(BaseModel):
     """Custom base model that ignores extra fields."""
 
-    model_config = ConfigDict(extra="ignore")
+    class Config:
+        extra = "ignore"
