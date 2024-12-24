@@ -8,31 +8,18 @@ from unittest.mock import mock_open, patch
 import pytest
 import requests_mock
 from dotenv import dotenv_values
-
-from gib_esu.models.request_models import (
-    ESU,
-    ESUGuncellemeBilgisi,
-    ESUGuncellemeModel,
-    ESUKapatmaModel,
-    ESUMukellefBilgisi,
-    ESUMukellefModel,
-    ESUSeriNo,
-    ESUTipi,
-    Fatura,
-    Lokasyon,
-    Mukellef,
-    MulkiyetSahibi,
-    Sertifika,
-    Soket,
-    SoketTipi,
-)
+from gib_esu.models.request_models import (ESU, ESUGuncellemeBilgisi,
+                                           ESUGuncellemeModel, ESUKapatmaModel,
+                                           ESUMukellefBilgisi,
+                                           ESUMukellefModel, ESUSeriNo,
+                                           ESUTipi, Fatura, Lokasyon, Mukellef,
+                                           MulkiyetSahibi, Sertifika, Soket,
+                                           SoketTipi)
 from gib_esu.models.response_models import Durum, Sonuc, Yanit
-from gib_esu.models.service_models import (
-    ESUTopluGuncellemeSonucu,
-    ESUTopluKayitSonucu,
-    TopluGuncellemeSonuc,
-    TopluKayitSonuc,
-)
+from gib_esu.models.service_models import (ESUTopluGuncellemeSonucu,
+                                           ESUTopluKayitSonucu,
+                                           TopluGuncellemeSonuc,
+                                           TopluKayitSonuc)
 from gib_esu.services.esu_service import ESUServis
 
 
@@ -181,7 +168,7 @@ def test_esu_servis_cihaz_kayit(
 
     mock_api.post(
         f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_KAYIT}",
-        json=test_yanit.model_dump(),
+        json=test_yanit.dict(),
     )
 
     resp: Yanit = servis.cihaz_kayit(test_esu)
@@ -203,7 +190,7 @@ def test_mukellef_kayit(
 
     mock_api.post(
         f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_MUKELLEF}",
-        json=test_yanit.model_dump(),
+        json=test_yanit.dict(),
     )
 
     resp = servis.mukellef_kayit(
@@ -219,11 +206,11 @@ def test_mukellef_kayit(
             firma_kodu=servis._firma.firma_kodu,
             durum_bilgileri=ESUMukellefBilgisi(
                 esu_seri_no=test_esu.esu_seri_no,
-                **test_fatura.model_dump(),
-                **test_mukellef.model_dump(),
-                **test_lokasyon.model_dump(),
-                **Sertifika().model_dump(),
-                **MulkiyetSahibi().model_dump(),
+                **test_fatura.dict(),
+                **test_mukellef.dict(),
+                **test_lokasyon.dict(),
+                **Sertifika().dict(),
+                **MulkiyetSahibi().dict(),
             ),
         )
     )
@@ -260,16 +247,16 @@ def test_toplu_kayit(
 
     mock_api.post(
         f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_KAYIT}",
-        json=test_yanit.model_dump(),
+        json=test_yanit.dict(),
     )
     mock_api.post(
         f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_MUKELLEF}",
-        json=test_yanit.model_dump(),
+        json=test_yanit.dict(),
     )
 
     resp = servis.toplu_kayit(csv_string=sample_csv, istekleri_logla=True)
 
-    assert TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
+    assert TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no == str(test_esu.esu_seri_no)
     assert (
         TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no
         == test_yanit.sonuc[0].esu_seri_no
@@ -278,7 +265,7 @@ def test_toplu_kayit(
     assert servis.logger.level == logging.INFO
 
     resp = servis.toplu_kayit(csv_string=sample_csv2, paralel_calistir=True)
-    assert TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
+    assert TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no == str(test_esu.esu_seri_no)
     assert (
         TopluKayitSonuc(**resp).sonuclar[0].esu_seri_no
         == test_yanit.sonuc[0].esu_seri_no
@@ -300,7 +287,7 @@ def test_toplu_kayit(
         )
         mock_write.assert_called_once_with(
             cikti_dosya_yolu=dummy_output_path,
-            icerik=json.dumps(test_kayit_sonuc.model_dump(), indent=4),
+            icerik=json.dumps(test_kayit_sonuc.dict(), indent=4),
         )
 
 
@@ -318,18 +305,18 @@ def test_kayit_guncelle(
 
     mock_api.post(
         f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_GUNCELLEME}",
-        json=test_yanit.model_dump(),
+        json=test_yanit.dict(),
     )
 
     resp = servis.kayit_guncelle(
         kayit_bilgileri=ESUGuncellemeModel(
             firma_kodu=servis._firma.firma_kodu,
             guncelleme_istek_bilgileri=ESUGuncellemeBilgisi(
-                **test_lokasyon.model_dump(),
-                **test_fatura.model_dump(),
+                **test_lokasyon.dict(),
+                **test_fatura.dict(),
                 esu_seri_no=test_esu.esu_seri_no,
-                **Sertifika().model_dump(),
-                **MulkiyetSahibi().model_dump(),
+                **Sertifika().dict(),
+                **MulkiyetSahibi().dict(),
             ),
         )
     )
@@ -365,12 +352,15 @@ def test_toplu_guncelle(
 
     mock_api.post(
         f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_GUNCELLEME}",
-        json=test_yanit.model_dump(),
+        json=test_yanit.dict(),
     )
 
     resp = servis.toplu_guncelle(csv_string=sample_csv, istekleri_logla=True)
 
-    assert TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
+    assert (
+        TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no
+        == str(test_esu.esu_seri_no)
+    )
     assert (
         TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no
         == test_yanit.sonuc[0].esu_seri_no
@@ -379,7 +369,10 @@ def test_toplu_guncelle(
     assert servis.logger.level == logging.INFO
 
     resp = servis.toplu_guncelle(csv_string=sample_csv2, paralel_calistir=True)
-    assert TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no == test_esu.esu_seri_no
+    assert (
+        TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no
+        == str(test_esu.esu_seri_no)
+    )
     assert (
         TopluGuncellemeSonuc(**resp).sonuclar[0].esu_seri_no
         == test_yanit.sonuc[0].esu_seri_no
@@ -401,7 +394,7 @@ def test_toplu_guncelle(
         )
         mock_write.assert_called_once_with(
             cikti_dosya_yolu=dummy_output_path,
-            icerik=json.dumps(test_guncelleme_sonuc.model_dump(), indent=4),
+            icerik=json.dumps(test_guncelleme_sonuc.dict()),
         )
 
 
@@ -417,7 +410,7 @@ def test_cihaz_kapatma(
 
     mock_api.post(
         f"{servis._api.api_url}{ESUServis._ISTEK_TIPI.ESU_KAPATMA}",
-        json=test_yanit.model_dump(),
+        json=test_yanit.dict(),
     )
 
     with pytest.raises(ValueError) as e:

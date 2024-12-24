@@ -2,9 +2,8 @@ from copy import deepcopy
 from typing import List, cast
 
 import pytest
-from pydantic import ValidationError
-
 from gib_esu.models import ESUKapatmaModel, ESUSeriNo
+from pydantic import ValidationError
 
 
 @pytest.fixture(scope="module")
@@ -44,7 +43,7 @@ def test_esu_kapatma_model_validation_failure_cases(
 ) -> None:
     """Test ESUKapatmaModel validation faiures."""
 
-    test_model = cast(dict, deepcopy(my_model.model_dump()))
+    test_model = cast(dict, deepcopy(my_model.dict()))
 
     set_nested_field(test_model, keys, invalid_value)
 
@@ -56,6 +55,6 @@ def test_esu_kapatma_model_validation_failure_cases(
 def test_esu_kapatma_model_validation_success_case(my_model: ESUKapatmaModel) -> None:
     """Test ESUKapatmaModel successful construction."""
     try:
-        ESUKapatmaModel(**my_model.model_dump())
+        ESUKapatmaModel(**my_model.dict())
     except Exception as excinfo:
         pytest.fail(f"Unexpected exception raised: {excinfo}")

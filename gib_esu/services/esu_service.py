@@ -9,34 +9,20 @@ from typing import Any, Dict, Optional, Union, cast
 
 import requests
 from dotenv import dotenv_values
-from pydantic import HttpUrl
-
 from gib_esu.helpers.py_utils import PyUtils
-from gib_esu.models.request_models import (
-    ESU,
-    ESUGuncellemeModel,
-    ESUKapatmaModel,
-    ESUKayitModel,
-    ESUMukellefModel,
-    ESUSeriNo,
-    Fatura,
-    Firma,
-    Lokasyon,
-    Mukellef,
-    MulkiyetSahibi,
-    Sertifika,
-    Soket,
-)
+from gib_esu.models.request_models import (ESU, ESUGuncellemeModel,
+                                           ESUKapatmaModel, ESUKayitModel,
+                                           ESUMukellefModel, ESUSeriNo, Fatura,
+                                           Firma, Lokasyon, Mukellef,
+                                           MulkiyetSahibi, Sertifika, Soket)
 from gib_esu.models.response_models import Yanit
-from gib_esu.models.service_models import (
-    APIParametreleri,
-    ESUServisKonfigurasyonu,
-    ESUTopluGuncellemeSonucu,
-    ESUTopluKayitSonucu,
-    EvetVeyaHayir,
-    TopluGuncellemeSonuc,
-    TopluKayitSonuc,
-)
+from gib_esu.models.service_models import (APIParametreleri,
+                                           ESUServisKonfigurasyonu,
+                                           ESUTopluGuncellemeSonucu,
+                                           ESUTopluKayitSonucu, EvetVeyaHayir,
+                                           TopluGuncellemeSonuc,
+                                           TopluKayitSonuc)
+from pydantic import HttpUrl
 
 
 class ESUServis:
@@ -67,7 +53,7 @@ class ESUServis:
             Dictionary or env file path to read the config from. Defaults to None.
         """
         _cfg = dotenv_values(ESUServis._DEFAULT_ENV) if _config is None else _config
-        config = ESUServisKonfigurasyonu.model_validate(_cfg)
+        config = ESUServisKonfigurasyonu.parse_obj(_cfg)
         self._api = APIParametreleri(
             api_sifre=str(config.GIB_API_SIFRE),
             prod_api=config.PROD_API == EvetVeyaHayir.EVET,
@@ -130,7 +116,7 @@ class ESUServis:
             json=data,
             verify=self._api.ssl_dogrulama,
         )
-        return Yanit.model_validate_json(json_data=json.dumps(response.json()))
+        return Yanit.parse_raw(json.dumps(response.json()))
 
     def cihaz_kayit(self, cihaz_bilgileri: Union[ESUKayitModel, ESU]) -> Yanit:
         """Registers a charge point with the GIB ESU EKS system.
@@ -149,8 +135,8 @@ class ESUServis:
                 esu=cihaz_bilgileri,
             )
         )
-        self.logger.debug(cihaz.model_dump_json())
-        return self._api_isteği(cihaz.model_dump())
+        self.logger.debug(cihaz.json())
+        return self._api_isteği(cihaz.dict())
 
     def mukellef_kayit(
         self,
@@ -233,10 +219,10 @@ class ESUServis:
         elif isinstance(mukellef_bilgileri, ESUMukellefModel):
             veri = mukellef_bilgileri
 
-        self.logger.debug(veri.model_dump_json())
+        self.logger.debug(veri.json())
 
         return self._api_isteği(
-            veri.model_dump(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_MUKELLEF
+            veri.dict(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_MUKELLEF
         )
 
     def _esu_bilgisi_hazirla(self, kayit: dict) -> ESU:
@@ -279,7 +265,7 @@ class ESUServis:
         else:
             mukellef = Mukellef(
                 mukellef_vkn=self._firma.firma_vkn,
-                mukellef_unvan=self._firma.firma_unvan,
+                mukellef_unvan=str(self._firma.firma_unvan),
             )
         fatura = (
             Fatura(**kayit) if not kayit.get("mulkiyet_sahibi_vkn_tckn") else Fatura()
@@ -403,14 +389,14 @@ class ESUServis:
         if bool(dosyaya_yaz):
             self._dosyaya_yaz(
                 cikti_dosya_yolu=(cikti_dosya_yolu or "gonderim_raporu.json"),
-                icerik=sonuc.model_dump_json(indent=4),
+                icerik=sonuc.json(indent=4),
             )
 
         # conditionally restore default logging level
         if istekleri_logla:
             self.logger.setLevel(logging.INFO)
 
-        return sonuc.model_dump()
+        return sonuc.dict()
 
     def kayit_guncelle(
         self,
@@ -476,10 +462,10 @@ class ESUServis:
         elif isinstance(kayit_bilgileri, ESUGuncellemeModel):
             veri = kayit_bilgileri
 
-        self.logger.debug(veri.model_dump_json())
+        self.logger.debug(veri.json())
 
         return self._api_isteği(
-            veri.model_dump(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_GUNCELLEME
+            veri.dict(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_GUNCELLEME
         )
 
     def _guncelleme_kaydi_isle(self, kayit: dict, sonuc: TopluGuncellemeSonuc) -> None:
@@ -586,14 +572,14 @@ class ESUServis:
         if bool(dosyaya_yaz):
             self._dosyaya_yaz(
                 cikti_dosya_yolu=(cikti_dosya_yolu or "gonderim_raporu.json"),
-                icerik=sonuc.model_dump_json(indent=4),
+                icerik=sonuc.json(),
             )
 
         # conditionally restore default logging level
         if istekleri_logla:
             self.logger.setLevel(logging.INFO)
 
-        return sonuc.model_dump()
+        return sonuc.dict()
 
     def cihaz_kapatma(
         self,
@@ -633,5 +619,5 @@ class ESUServis:
                 "verilmemiş ya da verili değer geçersiz"
             )
         return self._api_isteği(
-            cihaz.model_dump(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_KAPATMA
+            cihaz.dict(), istek_tipi=ESUServis._ISTEK_TIPI.ESU_KAPATMA
         )

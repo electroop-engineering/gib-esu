@@ -1,15 +1,10 @@
+import re
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import HttpUrl
-
 from gib_esu.models.base_model import CustomBaseModel
-from gib_esu.models.request_models import (
-    ESUSeriNo,
-    NonEmptyString,
-    TaxNumber,
-    TaxNumberOrEmpty,
-)
+from gib_esu.models.request_models import ESUSeriNo, RegEx__Firma_VKN
+from pydantic import HttpUrl, constr, root_validator
 
 # enums
 
@@ -38,16 +33,22 @@ class APIParametreleri(CustomBaseModel):
 class ESUServisKonfigurasyonu(CustomBaseModel):
     """Service configuration model."""
 
-    FIRMA_UNVAN: NonEmptyString
-    EPDK_LISANS_KODU: NonEmptyString
-    FIRMA_VKN: TaxNumber
-    GIB_FIRMA_KODU: NonEmptyString
-    GIB_API_SIFRE: NonEmptyString
+    FIRMA_UNVAN: constr(strip_whitespace=True, min_length=1)  # type: ignore
+    EPDK_LISANS_KODU: constr(strip_whitespace=True, min_length=1)  # type: ignore
+    FIRMA_VKN: constr(strip_whitespace=True, regex=RegEx__Firma_VKN)  # type: ignore
+    GIB_FIRMA_KODU: constr(strip_whitespace=True, min_length=1)  # type: ignore
+    GIB_API_SIFRE: constr(strip_whitespace=True, min_length=1)  # type: ignore
     PROD_API: EvetVeyaHayir
     SSL_DOGRULAMA: EvetVeyaHayir
     TEST_FIRMA_KULLAN: EvetVeyaHayir
-    GIB_TEST_FIRMA_VKN: TaxNumberOrEmpty
+    GIB_TEST_FIRMA_VKN: str = ""
 
+    @root_validator(pre=True)
+    def validate_field(cls, values):
+        value = values.get("GIB_TEST_FIRMA_VKN", "").strip()
+        if value and not re.fullmatch(RegEx__Firma_VKN, value):
+            raise ValueError("Invalid tax number")
+        return values
 
 # service output models
 

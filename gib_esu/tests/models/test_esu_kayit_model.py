@@ -2,9 +2,8 @@ from copy import deepcopy
 from typing import List, cast
 
 import pytest
-from pydantic import ValidationError
-
 from gib_esu.models import ESU, ESUKayitModel, ESUTipi, Firma, Soket, SoketTipi
+from pydantic import ValidationError
 
 
 @pytest.fixture(scope="module")
@@ -71,7 +70,7 @@ def test_esu_kayit_model_validation_failure_cases(
 ) -> None:
     """Test ESUKayitModel construction and validation faiures."""
 
-    test_model = cast(dict, deepcopy(my_model.model_dump()))
+    test_model = cast(dict, deepcopy(my_model.dict()))
 
     set_nested_field(test_model, keys, invalid_value)
 
@@ -85,7 +84,7 @@ def test_esu_kayit_model_validation_failure_case_soket_detay_length(
 ) -> None:
     """Test ESUKayitModel SOKET_DETAY_UZUNLUK_ERROR validation error."""
 
-    test_model = cast(dict, deepcopy(my_model.model_dump()))
+    test_model = cast(dict, deepcopy(my_model.dict()))
 
     test_model["kayit_bilgisi"]["esu_soket_detay"].append(
         Soket(soket_no="Soket3", soket_tip=SoketTipi.AC)
@@ -100,23 +99,23 @@ def test_esu_kayit_model_validation_failure_case_soket_detay_length(
 def test_esu_kayit_model_validation_success_case(my_model: ESUKayitModel) -> None:
     """Test successful ESUKayitModel instantiation."""
     try:
-        ESUKayitModel(**my_model.model_dump())
+        ESUKayitModel(**my_model.dict())
     except Exception as excinfo:
         pytest.fail(f"Unexpected exception raised: {excinfo}")
 
 
 def test_esu_kayit_olustur(my_model: ESUKayitModel) -> None:
     """Test ESUKayit.olustur(firma, esu) class method."""
-    firma = Firma(**my_model.model_dump())
+    firma = Firma(**my_model.dict())
 
     kayit: ESU = my_model.kayit_bilgisi
     soket_detay = kayit.esu_soket_detay
 
-    soket1 = Soket(**soket_detay[0].model_dump())
+    soket1 = Soket(**soket_detay[0].dict())
 
-    soket2 = Soket(**soket_detay[1].model_dump())
+    soket2 = Soket(**soket_detay[1].dict())
 
-    esu = ESU(**kayit.model_dump())
+    esu = ESU(**kayit.dict())
     esu.esu_soket_detay = [soket1, soket2]
 
     try:

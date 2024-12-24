@@ -2,19 +2,10 @@ from copy import deepcopy
 from typing import List, cast
 
 import pytest
+from gib_esu.models import (ESUGuncellemeModel, ESUMukellefBilgisi,
+                            ESUMukellefModel, ESUSeriNo, Fatura, Lokasyon,
+                            Mukellef, MulkiyetSahibi, Sertifika)
 from pydantic import ValidationError
-
-from gib_esu.models import (
-    ESUGuncellemeModel,
-    ESUMukellefBilgisi,
-    ESUMukellefModel,
-    ESUSeriNo,
-    Fatura,
-    Lokasyon,
-    Mukellef,
-    MulkiyetSahibi,
-    Sertifika,
-)
 
 
 @pytest.fixture(scope="module")
@@ -90,7 +81,7 @@ def set_nested_field(data: dict, keys: List[str], value: str) -> None:
                 "durum_bilgileri>fatura_ettn*"
                 "durum_bilgileri>fatura_tarihi"
             ),
-            "012345678*ABC A.Ş.**",
+            "12345678*ABC A.Ş.**",
         ),
     ],
 )
@@ -101,7 +92,7 @@ def test_esu_mukellef_model_validation_failure_cases(
 ) -> None:
     """Test ESUMukellefModel construction and validation failures."""
 
-    test_model = cast(dict, deepcopy(my_model.model_dump()))
+    test_model = cast(dict, deepcopy(my_model.dict()))
 
     keys_arr = keys.split("*")
     values_arr = invalid_value.split("*")
@@ -116,7 +107,7 @@ def test_esu_mukellef_model_validation_failure_cases(
 def test_esu_mukellef_model_validation_success_case(my_model: ESUMukellefModel) -> None:
     """Test successful ESUMukellefModel instantiation."""
     try:
-        ESUMukellefModel(**my_model.model_dump())
+        ESUMukellefModel(**my_model.dict())
     except Exception as excinfo:
         pytest.fail(f"Unexpected exception raised: {excinfo}")
 
@@ -126,15 +117,15 @@ def test_esu_mukellef_olustur(my_model: ESUMukellefModel) -> None:
 
     durum = my_model.durum_bilgileri
 
-    lokasyon = Lokasyon(**durum.model_dump())
+    lokasyon = Lokasyon(**durum.dict())
 
-    fatura = Fatura(**durum.model_dump())
+    fatura = Fatura(**durum.dict())
 
-    mukellef = Mukellef(**durum.model_dump())
+    mukellef = Mukellef(**durum.dict())
 
-    mulkiyet_sahibi = MulkiyetSahibi(**durum.model_dump())
+    mulkiyet_sahibi = MulkiyetSahibi(**durum.dict())
 
-    sertifika = Sertifika(**durum.model_dump())
+    sertifika = Sertifika(**durum.dict())
 
     try:
         ESUMukellefModel.olustur(

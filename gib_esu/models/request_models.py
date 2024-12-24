@@ -2,22 +2,14 @@ from __future__ import annotations
 
 import re
 from enum import Enum
-from typing import Annotated, List, Optional, TypeVar, Union, cast
-
-from pydantic import (
-    AfterValidator,
-    Field,
-    PlainValidator,
-    StringConstraints,
-    model_validator,
-)
-from typing_extensions import Self
+from typing import Any, Dict, Optional, cast
 
 from gib_esu.models.base_model import CustomBaseModel
+from pydantic import Field, conlist, constr, root_validator
 
 # regex patterns
 
-RegEx__Soket_No = r"^Soket\d+$"
+RegEx__Soket_No = r"^Soket\d{1}$"
 RegEx__Soket_Sayisi = r"^[1-9]$"
 RegEx__Firma_VKN = r"\b\d{10}\b"
 RegEx__Il_Kodu = r"\b\d{3}\b"
@@ -25,31 +17,24 @@ RegEx__Tarih = r"^\d{4}-\d{2}-\d{2}$"  # YYYY-MM-DD
 
 
 # validators
-def _validate_tax_number(tax_nr: str) -> str:
-    """Validates a given tax number.
 
-    Args:
-        tax_nr (str): Tax number to validate
-
-    Raises:
-        ValueError: In case tax_nr does not conform to tax number scheme
-
-    Returns:
-        str: Validated tax_nr
-    """
-    v_str = tax_nr.strip()
-    if not v_str or re.fullmatch(RegEx__Firma_VKN, v_str):
-        return v_str
-    raise ValueError(f"{tax_nr} geçerli bir vergi kimlik numarası değil")
+VKNConstrainedString = constr(regex=RegEx__Firma_VKN, strip_whitespace=True)
 
 
-def _validate_tax_payer_and_update_models(model: CustomBaseModelWithValidator) -> None:
+def _validate_tax_payer_and_update_models(
+        model: ESUMukellefBilgisi | ESUGuncellemeBilgisi
+) -> None:
     """Validates both the tax payer registration and the charge point update models."""
-    durum: Union[ESUMukellefBilgisi, ESUGuncellemeBilgisi] = (
-        cast(ESUGuncellemeModel, model).guncelleme_istek_bilgileri
-        if isinstance(model, ESUGuncellemeModel)
-        else cast(ESUMukellefModel, model).durum_bilgileri
-    )
+
+    durum: ESUMukellefBilgisi | ESUGuncellemeBilgisi
+
+    if isinstance(model, ESUMukellefBilgisi):
+        durum = ESUMukellefBilgisi.construct(**model.dict())
+    elif isinstance(model, ESUGuncellemeBilgisi):
+        durum = ESUGuncellemeBilgisi.construct(**model.dict())
+    else:
+        raise ValueError("ESUMukellefBilgisi or ESUGuncellemeBilgisi expected")
+
     sertifika_tarihi = durum.sertifika_tarihi or ""
     sertifika_no = durum.sertifika_no or ""
     fatura_tarihi = durum.fatura_tarihi or ""
@@ -59,7 +44,7 @@ def _validate_tax_payer_and_update_models(model: CustomBaseModelWithValidator) -
 
     # conditions to check to enforce consistency and mutual exclusion rules
 
-    mulkiyet_vkn_does_not_exist = len(mulkiyet_sahibi_vkn_tckn.strip()) == 0
+    mulkiyet_vkn_does_not_exist = len(str(mulkiyet_sahibi_vkn_tckn).strip()) == 0
     mulkiyet_unvan_does_not_exist = len(mulkiyet_sahibi_ad_unvan.strip()) == 0
     fatura_ettn_does_not_exist = len(fatura_ettn.strip()) == 0
     fatura_tarihi_does_not_exist = len(fatura_tarihi.strip()) == 0
@@ -121,43 +106,6 @@ def _validate_tax_payer_and_update_models(model: CustomBaseModelWithValidator) -
     ):
         raise ValueError("`sertifika_tarihi` YYYY-MM-DD formatında olmalıdır")
 
-
-# type definitions
-
-T = TypeVar("T")
-
-"""Type definition of a non-empty string."""
-NonEmptyString = Annotated[
-    str,
-    StringConstraints(strip_whitespace=True),
-    AfterValidator(lambda v: v),
-    StringConstraints(min_length=1),
-]
-
-"""Type definition of a non-empty list."""
-NonEmptyList = Annotated[List[T], Field(default_factory=list, min_length=1)]
-
-
-"""Type definition for required tax numbers."""
-TaxNumber = Annotated[
-    str,
-    StringConstraints(strip_whitespace=True),
-    Field(pattern=RegEx__Firma_VKN),
-]
-
-
-"""Type definition for optional tax numbers."""
-TaxNumberOrEmpty = Annotated[
-    str,
-    StringConstraints(strip_whitespace=True),
-    PlainValidator(_validate_tax_number),
-]
-
-"""Type definition for city code."""
-CityCode = Annotated[
-    str, StringConstraints(strip_whitespace=True), Field(pattern=RegEx__Il_Kodu)
-]
-
 # enums
 
 
@@ -173,8 +121,7 @@ class ESUTipi(str, Enum):
 
     AC = SoketTipi.AC.value
     DC = SoketTipi.DC.value
-    AC_DC = "AC/DC"
-
+    AC_DC = f"{SoketTipi.AC.value}/{SoketTipi.DC.value}"
 
 # domain models
 
@@ -182,45 +129,61 @@ class ESUTipi(str, Enum):
 class Soket(CustomBaseModel):
     """Charge point's connectors."""
 
-    soket_no: str = Field(pattern=RegEx__Soket_No)  # Soket1, Soket2, Soket3, etc.
+    soket_no: str = Field(
+        default_factory=str,
+        regex=RegEx__Soket_No
+    )  # Soket1, Soket2, Soket3, etc.
     soket_tip: SoketTipi
 
 
 class ESUSeriNo(CustomBaseModel):
     """Charge point's serial number."""
 
-    esu_seri_no: NonEmptyString
+    esu_seri_no: 'NonEmptyString'  # type: ignore # Forward reference
 
 
 class ESU(ESUSeriNo):
     """Charge point model."""
 
     esu_soket_tipi: ESUTipi
-    esu_soket_sayisi: str = Field(pattern=RegEx__Soket_Sayisi)  # "1", "2", "3", etc.
-    esu_soket_detay: NonEmptyList[Soket]
-    esu_markasi: NonEmptyString
-    esu_modeli: NonEmptyString
+    esu_soket_sayisi: str = Field(
+        default_factory=str,
+        regex=RegEx__Soket_Sayisi
+    )  # "1", "2", "3", etc.
+    esu_soket_detay: conlist(item_type=Soket, min_items=1)  # type: ignore
+    esu_markasi: constr(strip_whitespace=True, min_length=1)  # type: ignore
+    esu_modeli: constr(strip_whitespace=True, min_length=1)  # type: ignore
+
+
+# Define NonEmptyString after the model
+NonEmptyString = constr(strip_whitespace=True, min_length=1)  # type: ignore
+
+# Update forward references
+ESUSeriNo.update_forward_refs()
+ESU.update_forward_refs()
 
 
 class FirmaKodu(CustomBaseModel):
     """Company code model."""
 
-    firma_kodu: NonEmptyString
+    firma_kodu: constr(strip_whitespace=True, min_length=1)  # type: ignore
 
 
 class Firma(FirmaKodu):
     """Company info model."""
 
-    firma_vkn: TaxNumber
-    epdk_lisans_no: NonEmptyString
-    firma_unvan: Optional[NonEmptyString] = Field(default=None, exclude=True)
+    firma_vkn: constr(strip_whitespace=True, regex=RegEx__Firma_VKN)  # type: ignore
+    epdk_lisans_no: constr(strip_whitespace=True, min_length=1)  # type: ignore
+    firma_unvan: None | constr(  # type: ignore
+        strip_whitespace=True, min_length=1
+    ) = Field(default=None, exclude=True)    # type: ignore
 
 
 class Lokasyon(CustomBaseModel):
     """EV charging location model."""
 
-    il_kodu: CityCode
-    ilce: NonEmptyString
+    il_kodu: constr(strip_whitespace=True, regex=RegEx__Il_Kodu)  # type: ignore
+    ilce: constr(strip_whitespace=True, min_length=1)  # type: ignore
     adres_numarası: Optional[str] = ""
     koordinat: Optional[str] = ""
 
@@ -228,8 +191,15 @@ class Lokasyon(CustomBaseModel):
 class Mukellef(CustomBaseModel):
     """Tax payer model."""
 
-    mukellef_vkn: Optional[TaxNumberOrEmpty] = ""
-    mukellef_unvan: Optional[str] = ""
+    mukellef_vkn: str = ""
+    mukellef_unvan: str = ""
+
+    @root_validator(pre=True)
+    def validate_field(cls, values):
+        value = values.get("mukellef_vkn", "")
+        if value and not VKNConstrainedString.validate(value):
+            raise ValueError("Invalid tax number")
+        return values
 
 
 class Sertifika(CustomBaseModel):
@@ -249,8 +219,15 @@ class Fatura(CustomBaseModel):
 class MulkiyetSahibi(CustomBaseModel):
     """Charge point owner model."""
 
-    mulkiyet_sahibi_vkn_tckn: Optional[TaxNumberOrEmpty] = ""
-    mulkiyet_sahibi_ad_unvan: Optional[str] = ""
+    mulkiyet_sahibi_vkn_tckn: str = ""
+    mulkiyet_sahibi_ad_unvan: str = ""
+
+    @root_validator(pre=True)
+    def validate_field(cls, values):
+        value = values.get("mulkiyet_sahibi_vkn_tckn", "")
+        if bool(value) and not VKNConstrainedString.validate(value):
+            raise ValueError("Invalid tax number")
+        return values
 
 
 class ESUMukellefBilgisi(
@@ -258,23 +235,21 @@ class ESUMukellefBilgisi(
 ):
     """Intermediary model that encapsulates charge point and tax payer information."""
 
-    pass
+    @root_validator(pre=True)
+    def validate_field(cls, values):
+        value = values.get("mulkiyet_sahibi_vkn_tckn", "")
+        if bool(value) and not VKNConstrainedString.validate(value):
+            raise ValueError("Invalid tax number")
+        return values
+
+# Update forward references
+# ESUMukellefBilgisi.update_forward_refs()
 
 
 class ESUGuncellemeBilgisi(ESUSeriNo, Fatura, Lokasyon, MulkiyetSahibi, Sertifika):
     """Intermediary model that encapsulates charge point and ownership information."""
 
     pass
-
-
-class CustomBaseModelWithValidator(CustomBaseModel):
-    """Custom base model with a predefined model validator function."""
-
-    @model_validator(mode="after")
-    def _enforce_model_constraints(self) -> Self:
-        """Validates the model according to the model constraints."""
-        _validate_tax_payer_and_update_models(cast(CustomBaseModelWithValidator, self))
-        return self
 
 
 # request models
@@ -299,10 +274,10 @@ class ESUKayitModel(Firma):
         combined_data = {**firma.__dict__, "kayit_bilgisi": esu}
         return ESUKayitModel(**combined_data)
 
-    @model_validator(mode="after")
-    def _enforce_model_constraints(self) -> Self:
+    @root_validator(pre=False)
+    def _enforce_model_constraints(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Validates the model according to the model constraints."""
-        kayit: ESU = self.kayit_bilgisi
+        kayit: ESU = ESU.parse_obj(values.get("kayit_bilgisi"))
         soket_tipi = kayit.esu_soket_tipi
         soket_sayisi = kayit.esu_soket_sayisi
         soket_detay = kayit.esu_soket_detay
@@ -323,20 +298,31 @@ class ESUKayitModel(Firma):
             has_ac = any(item.soket_tip == SoketTipi.AC.value for item in soket_detay)
             has_dc = any(item.soket_tip == SoketTipi.DC.value for item in soket_detay)
             assert has_ac and has_dc, "Soket detayları AC/DC EŞÜ ile uyumlu değil"
-        return self
+        return values
 
 
 class ESUKapatmaModel(CustomBaseModel):
     """Charge point delisting request model."""
 
-    firma_kodu: NonEmptyString
+    firma_kodu: constr(strip_whitespace=True, min_length=1)  # type: ignore
     kapatma_bilgisi: ESUSeriNo
 
 
-class ESUMukellefModel(CustomBaseModelWithValidator, FirmaKodu):
+class ESUMukellefModel(FirmaKodu):
     """Charge point tax payer info registration model."""
 
     durum_bilgileri: ESUMukellefBilgisi
+
+    @root_validator(pre=False)
+    def _enforce_model_constraints(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Validates the model according to the model constraints."""
+        _validate_tax_payer_and_update_models(
+            cast(
+                ESUMukellefBilgisi,
+                cls.construct(**values).__dict__.get("durum_bilgileri")
+            )
+        )
+        return values
 
     @classmethod
     def olustur(
@@ -365,24 +351,37 @@ class ESUMukellefModel(CustomBaseModelWithValidator, FirmaKodu):
             ESUMukellefModel: Constructed model instance
         """
         combined_data = {
-            **ESUSeriNo(esu_seri_no=esu_seri_no).model_dump(),
-            **fatura.model_dump(),
-            **lokasyon.model_dump(),
-            **mukellef.model_dump(),
-            **(mulkiyet_sahibi or MulkiyetSahibi()).model_dump(),
-            **(sertifika or Sertifika()).model_dump(),
+            **ESUSeriNo(esu_seri_no=esu_seri_no).dict(),
+            **fatura.dict(),
+            **lokasyon.dict(),
+            **mukellef.dict(),
+            **(mulkiyet_sahibi or MulkiyetSahibi()).dict(),
+            **(sertifika or Sertifika()).dict(),
         }
         mukellef_durum = ESUMukellefBilgisi(**combined_data)
         return ESUMukellefModel(
-            **FirmaKodu(firma_kodu=firma_kodu).model_dump(),
+            **FirmaKodu(firma_kodu=firma_kodu).dict(),
             durum_bilgileri=mukellef_durum,
         )
 
+# ESUMukellefModel.update_forward_refs()
 
-class ESUGuncellemeModel(CustomBaseModelWithValidator, FirmaKodu):
+
+class ESUGuncellemeModel(FirmaKodu):
     """Charge point update request model."""
 
     guncelleme_istek_bilgileri: ESUGuncellemeBilgisi
+
+    @root_validator(pre=False)
+    def _enforce_model_constraints(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Validates the model according to the model constraints."""
+        _validate_tax_payer_and_update_models(
+            cast(
+                ESUGuncellemeBilgisi,
+                cls.construct(**values).__dict__.get("guncelleme_istek_bilgileri")
+            )
+        )
+        return values
 
     @classmethod
     def olustur(
@@ -409,14 +408,14 @@ class ESUGuncellemeModel(CustomBaseModelWithValidator, FirmaKodu):
             ESUGuncellemeModel: Constructed model instance
         """
         combined_data = {
-            **esu_seri_no.model_dump(),
-            **fatura.model_dump(),
-            **lokasyon.model_dump(),
-            **(mulkiyet_sahibi or MulkiyetSahibi()).model_dump(),
-            **(sertifika or Sertifika()).model_dump(),
+            **esu_seri_no.dict(),
+            **fatura.dict(),
+            **lokasyon.dict(),
+            **(mulkiyet_sahibi or MulkiyetSahibi()).dict(),
+            **(sertifika or Sertifika()).dict(),
         }
 
         return ESUGuncellemeModel(
-            **FirmaKodu(firma_kodu=firma_kodu).model_dump(),
+            **FirmaKodu(firma_kodu=firma_kodu).dict(),
             guncelleme_istek_bilgileri=ESUGuncellemeBilgisi(**combined_data),
         )
