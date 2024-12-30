@@ -167,7 +167,8 @@ def test_esu_servis_instantiation(test_config: str) -> None:
     """Test ESUServis instantiation."""
 
     try:
-        ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
+        servis = ESUServis(_config=dotenv_values(stream=StringIO(test_config)))
+        assert str(servis._api.api_url) == ESUServis._API.TEST.value
     except Exception as excinfo:
         pytest.fail(f"Unexpected exception raised: {excinfo}")
 
