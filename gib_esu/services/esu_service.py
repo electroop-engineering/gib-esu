@@ -86,9 +86,9 @@ class ESUServis:
             epdk_lisans_no=config.EPDK_LISANS_KODU,
         )
         self._api.api_url = (
-            cast(HttpUrl, ESUServis._API.PROD)
+            cast(HttpUrl, ESUServis._API.PROD.value)
             if self._api.prod_api
-            else cast(HttpUrl, ESUServis._API.TEST)
+            else cast(HttpUrl, ESUServis._API.TEST.value)
         )
         # no ssl warnings will be displayed when `ssl_dogrulama` is set to `0` (False)
         if not self._api.ssl_dogrulama:
@@ -123,7 +123,7 @@ class ESUServis:
             "Authorization": f"Basic {base64.b64encode(token).decode('utf-8')}",
         }
 
-        url = f"{self._api.api_url}{istek_tipi}"
+        url = f"{str(self._api.api_url)}{istek_tipi.value}"
         response = requests.post(
             url=url,
             headers=headers,
