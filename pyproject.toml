@@ -22,10 +22,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = [
-    "pydantic==1.10.2",
-    "python-dotenv>=1.0.0"
-]
 
 [project.optional-dependencies]
 dev = [
