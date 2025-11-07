@@ -9,20 +9,34 @@ from typing import Any, Dict, Optional, Union, cast
 
 import requests
 from dotenv import dotenv_values
+from pydantic import HttpUrl, ValidationError
+
 from gib_esu.helpers.py_utils import PyUtils
-from gib_esu.models.request_models import (ESU, ESUGuncellemeModel,
-                                           ESUKapatmaModel, ESUKayitModel,
-                                           ESUMukellefModel, ESUSeriNo, Fatura,
-                                           Firma, Lokasyon, Mukellef,
-                                           MulkiyetSahibi, Sertifika, Soket)
+from gib_esu.models.request_models import (
+    ESU,
+    ESUGuncellemeModel,
+    ESUKapatmaModel,
+    ESUKayitModel,
+    ESUMukellefModel,
+    ESUSeriNo,
+    Fatura,
+    Firma,
+    Lokasyon,
+    Mukellef,
+    MulkiyetSahibi,
+    Sertifika,
+    Soket,
+)
 from gib_esu.models.response_models import Yanit
-from gib_esu.models.service_models import (APIParametreleri,
-                                           ESUServisKonfigurasyonu,
-                                           ESUTopluGuncellemeSonucu,
-                                           ESUTopluKayitSonucu, EvetVeyaHayir,
-                                           TopluGuncellemeSonuc,
-                                           TopluKayitSonuc)
-from pydantic import HttpUrl
+from gib_esu.models.service_models import (
+    APIParametreleri,
+    ESUServisKonfigurasyonu,
+    ESUTopluGuncellemeSonucu,
+    ESUTopluKayitSonucu,
+    EvetVeyaHayir,
+    TopluGuncellemeSonuc,
+    TopluKayitSonuc,
+)
 
 
 class ESUServis:
@@ -116,7 +130,14 @@ class ESUServis:
             json=data,
             verify=self._api.ssl_dogrulama,
         )
-        return Yanit.parse_raw(json.dumps(response.json()))
+        try:
+            return Yanit.parse_raw(json.dumps(response.json()))
+        except requests.exceptions.JSONDecodeError:
+            print(f"Servis cevabı parse edilemedi cevap: {response.text}")
+            return response.text
+        except ValidationError:
+            print(f"Servis cevabı şemaya uymuyor cevap: {response.json()}")
+            return response.json()
 
     def cihaz_kayit(self, cihaz_bilgileri: Union[ESUKayitModel, ESU]) -> Yanit:
         """Registers a charge point with the GIB ESU EKS system.
@@ -368,7 +389,6 @@ class ESUServis:
         self.logger.info("GİB'e gönderim başlıyor...")
 
         if bool(paralel_calistir):
-
             with concurrent.futures.ThreadPoolExecutor(
                 max_workers=max((os.cpu_count() or 6) - 2, 1)
             ) as executor:
@@ -551,7 +571,6 @@ class ESUServis:
         self.logger.info("GİB'e gönderim başlıyor...")
 
         if bool(paralel_calistir):
-
             with concurrent.futures.ThreadPoolExecutor(
                 max_workers=max((os.cpu_count() or 6) - 2, 1)
             ) as executor:
